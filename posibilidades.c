@@ -308,7 +308,7 @@ int main(int argc, char *argv[]){
 						/*Obtención de la información relativa a los medicamentos*/
 						numMed = leeFicheros(filesName);
 
-
+						printf("Numero de medicamentos: %d\n", numMed);
 
 /*--------------------------------------------------------------------------
 ------------------------Calculamos posibilidad a posibilidad----------------
