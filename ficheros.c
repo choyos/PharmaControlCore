@@ -21,31 +21,35 @@ Nombre: César*/
 #define DOMINGO 6
 
 #define TAM_BUF 100
+#define TAM_FILE_NAME 20
 
-int leeFicheros(char ** fileNames){
+int leeFicheros(char ** filesName){
 
 	int i = 0;
+	int error = 0;
 	FILE *fp;
-	char data[TAM_BUF];
+	//Nombre del fichero en el que vienen los nombres del resto de ficheros
+	char * mainFile = "ficheros.pha";
 
-	printf("Lectura del fichero: %s\n", argv[1] );
-
-	fp = fopen ( "ficheros.pha" , "r" );
+	fp = fopen ( mainFile , "r" );
 	if(fp == NULL){	//Caso de no apertura pasar el error 
-		printf("ERROR: Fichero no encontrado: %s\n", fileName);
 		error = -1;
 	}else{
-		
+		//Lectura del fichero hasta que termine
+		//Reservamos memoria para la matriz
+		filesName = (char **) malloc(sizeof(*filesName));
+		filesName[0] = (char *) malloc(TAM_FILE_NAME*sizeof(char*));
+
+		//Leemos hasta el final del fichero
 		while(!feof(fp)){
-			fscanf(fp, "%s", fileNames[i]);
-			printf("%s\n", fileNames[i]);
+			fscanf(fp, "%s", filesName[i]); //Cada linea la almacenamos en un vector de cadenas de caracteres
+			i++;
+			//En cada pasada realizamos reserva dinamica de memoria para la nueva cadena
+			filesName = realloc(filesName, (i+1) * sizeof(*filesName));
+		    filesName[i] = malloc(TAM_FILE_NAME * sizeof(char*));		
 		}
-		
-		if( !fclose(fp) )
-	      printf( "Fichero cerrado\n" );
-		else
-		{
-			printf( "Error: fichero NO CERRADO\n" );
+		error = i;
+		if( fclose(fp) ){
 			error = -1;
 		}
 	}

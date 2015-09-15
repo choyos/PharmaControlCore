@@ -69,11 +69,3 @@ float evalua(int* pedidos, int horizonte, int retraso, int* stock, MEDICINE *med
 	liberaVector(orders);		
 	return J;
 }
-
-
-void inicializa(int * v,int tam){
-	int x;
-	for(x=0; x<tam;x++){
-		v[x]=0;
-	}
-}

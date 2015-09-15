@@ -22,6 +22,7 @@ Nombre: César*/
 #define VIERNES 4
 #define SABADO 5
 #define DOMINGO 6
+#define TAM_FILE_NAME 20
 
 int main(int argc, char *argv[]){
 	printf("\n");
@@ -57,6 +58,10 @@ int main(int argc, char *argv[]){
 	int *stock;
 	int *stockOptimo;
 	int *vectorOptimo;
+
+	char ** filesName = NULL;
+
+	int numMed;
 
 	
 	/*Comprobamos que el numero de argumentos recibidos es el correto*/
@@ -300,8 +305,13 @@ int main(int argc, char *argv[]){
 						printf("ERROR6:\nFecha incorrecta, fuera del horizonte");
 					}else{
 
+						/*Obtención de la información relativa a los medicamentos*/
+						numMed = leeFicheros(filesName);
+
+
+
 /*--------------------------------------------------------------------------
-------------------------Calculo de primera matriz---------------------------
+------------------------Calculamos posibilidad a posibilidad----------------
 --------------------------------------------------------------------------*/
 						for(j=0;j<horizonte;j++){
 							limite=limite*2;
@@ -358,7 +368,7 @@ int main(int argc, char *argv[]){
 												del medicamento.
 										*/
 										//Lectura del fichero
-										if(ficheros(horizonte, &medicine) == -1){
+										if(leeMedicamentos(horizonte, &medicine, filesName[i]) == -1){
 											printf("ERROR7: Lectura de fichero no realizada\n");
 											error = -7;
 										}else{

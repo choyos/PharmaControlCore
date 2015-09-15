@@ -85,3 +85,10 @@ void convIntToBin(int num, int bits,int *posibilidad){
 	}
 	
 }
+
+void inicializa(int * v,int tam){
+	int x;
+	for(x=0; x<tam;x++){
+		v[x]=0;
+	}
+}

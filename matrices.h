@@ -33,3 +33,6 @@ void liberaVector(int *vector);
 
 //Función para convertir de entero a binario con n bits. Devuelve un vector
 void convIntToBin(int num, int bits, int * posibilidad);
+
+//Función para inicializar los vectores a 0
+void inicializa(int * v,int tam);
