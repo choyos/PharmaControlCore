@@ -22,12 +22,44 @@ Nombre: César*/
 
 #define TAM_BUF 100
 
-int ficheros(int horizonte, MEDICINE* med){
+int leeFicheros(char ** fileNames){
+
+	int i = 0;
+	FILE *fp;
+	char data[TAM_BUF];
+
+	printf("Lectura del fichero: %s\n", argv[1] );
+
+	fp = fopen ( "ficheros.pha" , "r" );
+	if(fp == NULL){	//Caso de no apertura pasar el error 
+		printf("ERROR: Fichero no encontrado: %s\n", fileName);
+		error = -1;
+	}else{
+		
+		while(!feof(fp)){
+			fscanf(fp, "%s", fileNames[i]);
+			printf("%s\n", fileNames[i]);
+		}
+		
+		if( !fclose(fp) )
+	      printf( "Fichero cerrado\n" );
+		else
+		{
+			printf( "Error: fichero NO CERRADO\n" );
+			error = -1;
+		}
+	}
+
+	return error;
+}
+
+int leeMedicamentos(int horizonte, MEDICINE* med, char * fileName){
+	
 	FILE *fp;
 	int i;
 	int error = 0;	//Variable de error
 
-	fp = fopen ( "datos.pha" , "r" );
+	fp = fopen ( fileName , "r" );
 	if(fp == NULL){	//Caso de no apertura pasar el error 
 		error = -1;
 	}else{	//Caso de apertura
@@ -62,7 +94,13 @@ int ficheros(int horizonte, MEDICINE* med){
 		for(i=0; i<med->nTamPedidos;i++){ 
 			fscanf(fp, "%d", med->vTamPedidos+i );
 		}
-		fclose ( fp );
+		if( !fclose(fp) )
+	      printf( "Fichero datos %s cerrado\n",fileName );
+		else
+		{
+			printf( "Error: fichero datos %s NO CERRADO\n", fileName );
+			error = -1;
+		}
 	}
 	
 	return error;
