@@ -56,8 +56,8 @@ int main(int argc, char *argv[]){
 	//Variables para el cálculo de los costos y seguimiento de información
 	int x;
 	float Jtotal;
-	int *stockOptimo;
-	int *vectorOptimo;
+	int ** matStockOptimo;
+	int ** matPedidosOptimos;
 
 	//Variable para el trabajo con los nombres de los ficheros de datos
 	char ** filesName = NULL;
@@ -417,11 +417,22 @@ int main(int argc, char *argv[]){
 										//Apertura de fichero y trabajo para evaluar función de coste
 										if(noCumple == 0){
 
+											if(primeraVez == 0){
+												primeraVez = 1;
+												inicializaMatriz(numMed, horizonte, &matPedidosOptimos);
+												inicializaMatriz(numMed, horizonte, &matStockOptimo);
+											}
+
 											//Funcion en funciones.c
 											/*Realiza el calculo de el vector optimo para cada medicamento y almacena la información util
 											en el nodo correspondiente*/
-											Jtotal = EvaluaMedicinas(&listaMeds, horizonte, numPedidos, posibilidad);
+
+											Jtotal = EvaluaMedicinas(&listaMeds, horizonte, numPedidos, posibilidad, &matPedidosOptimos, &matStockOptimo);
 											printf("Coste total: %f\n", Jtotal);
+											if (Jtotal < Jtotalmin){
+												Jtotalmin = Jtotal;
+												AlmacenaOptimos(&listaMeds, horizonte, );
+											}
 										}
 									}
 								}

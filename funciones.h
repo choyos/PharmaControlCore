@@ -21,6 +21,6 @@ void ImprimeMedicinas (MEDICINE * pAnterior, int horizonte, int numPedidos);	//I
 
 void MatrizCombMedicinas (MEDICINE ** medicinaPrimera, int numPedidos);		//Realiza el calculo de la matriz de combinaciones de las diferentes medicinas y las añade a la estructura
 
-float EvaluaMedicinas(MEDICINE ** medicinaPrimera, int horizonte, int numPedidos, int * posibilidad);	//Realiza el calculo de coste total
+float EvaluaMedicinas(MEDICINE ** medicinaPrimera, int horizonte, int numPedidos, int * posibilidad, int *** matPedidosOptimos, int *** matStockOptimo);	//Realiza el calculo de coste total
 
 #endif

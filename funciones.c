@@ -167,7 +167,7 @@ void BorraMedicinas (MEDICINE ** medicinaPrimera){
   }
 }
 
-float EvaluaMedicinas(MEDICINE ** medicinaPrimera, int horizonte, int numPedidos, int * posibilidad){
+float EvaluaMedicinas(MEDICINE ** medicinaPrimera, int horizonte, int numPedidos, int * posibilidad, int *** matPedidosOptimos, int *** matStockOptimo){
 	
 	MEDICINE * paux = NULL;	//Puntero auxiliar para recorrer la lista
 	MEDICINE * primero = *medicinaPrimera;	//Puntero para no perder la referencia del comienzo de la lista
@@ -212,8 +212,6 @@ float EvaluaMedicinas(MEDICINE ** medicinaPrimera, int horizonte, int numPedidos
 		}
 		//Inicializamos los vectores necesarios
 		inicializaVector(horizonte, &stock);
-		inicializaVector(horizonte, &(paux->pedidosOptimos));
-		inicializaVector(horizonte, &(paux->stockOptimo));
 		/*Realizamos el computo con todas las posibilidades de la matriz obteniendo las Js*/
 
 		for(x = 0; x < paux->filasMatrixComb; x++){
@@ -223,8 +221,8 @@ float EvaluaMedicinas(MEDICINE ** medicinaPrimera, int horizonte, int numPedidos
 			if(x == 0 || J < paux->Jmin){
 				paux->Jmin = J;
 				for(k=0; k<horizonte; k++){
-					paux->pedidosOptimos[k]=matrix[x][k];
-					paux->stockOptimo[k]=stock[k];
+					*matPedidosOptimos[i][k]=matrix[x][k];
+					*matStockOptimo[i][k]=stock[k];
 				}
 			}
 		}
