@@ -9,6 +9,7 @@ Login: ceshoymar */
 #include "funciones.h"
 #include "typedef.h"
 #include "matrices.h"
+#include "evalua.h"
 
 MEDICINE * CreaNodoMed ( int stock, float precio_med, float precio_alm, float coste_pedido, float coste_recogida, float coste_sin_stock, float coste_oportunidad, int* repartidos, int maxStock, int minStock, int nTamPedidos, int* vTamPedidos, int horizonte)
 {
@@ -144,10 +145,16 @@ void MatrizCombMedicinas (MEDICINE ** medicinaPrimera, int numPedidos){
 }
 
 void BorraMedicinas (MEDICINE ** medicinaPrimera){
+  
+  //Puntero auxiliar para recorrido de lista
   MEDICINE *paux = NULL;
+  
   while (*medicinaPrimera != NULL){
+  	//Recorremos la lista
     paux = *medicinaPrimera;
     *medicinaPrimera = paux->sig;
+	
+    //Liberamos memoria de vectores y matrices
 	if( paux->repartidos != NULL)			
 		liberaVector(paux->repartidos);
 	if( paux->vTamPedidos != NULL)			
@@ -155,6 +162,90 @@ void BorraMedicinas (MEDICINE ** medicinaPrimera){
 	if(paux->matrixComb != NULL)
 		liberaMatriz(paux->filasMatrixComb, paux->matrixComb);
 
+	//Liberamos la referencia del nodo eliminandolo
     free(paux);
   }
+}
+
+float EvaluaMedicinas(MEDICINE ** medicinaPrimera, int horizonte, int numPedidos, int * posibilidad){
+	
+	MEDICINE * paux = NULL;	//Puntero auxiliar para recorrer la lista
+	MEDICINE * primero = *medicinaPrimera;	//Puntero para no perder la referencia del comienzo de la lista
+
+	//Matriz auxiliar para las combinaciones
+	int ** matrix;
+
+	//Variables auxiliares
+	int i = 0;
+	int x;
+	int j;
+	int k;
+	int g = 0;
+
+	//Variables auxiliares para el computo
+	int *stock;
+	float J;
+	float Jtotal;
+
+	inicializaMatriz(primero->filasMatrixComb, horizonte, &matrix);
+
+	while(*medicinaPrimera != NULL){
+		
+		i++;
+
+		//Recorremos la lista
+		paux = *medicinaPrimera;
+		*medicinaPrimera = paux->sig;
+
+		/*Generamos la matriz para evaluar las diferentes posibilidades de pedido*/
+		for(k = 0; k < paux->filasMatrixComb; k++){		// Accedemos todas las veces de las combinaciones posibles
+			for(j = 0; j < horizonte; j++){		// En el recorrido
+				if( posibilidad[j] == 1){	// Si es 1 se cambia por el valor correspondiente
+					matrix[k][j] = posibilidad[j] * paux->matrixComb[k][g];
+					g++;
+					
+				}else{	//Si es 0 se deja igual
+					matrix[k][j] = posibilidad[j];
+				}							
+			}
+			g=0;	//Al finalizar cada pasada reiniciamos el contador g a 0
+		}
+		//Inicializamos los vectores necesarios
+		inicializaVector(horizonte, &stock);
+		inicializaVector(horizonte, &(paux->pedidosOptimos));
+		inicializaVector(horizonte, &(paux->stockOptimo));
+		/*Realizamos el computo con todas las posibilidades de la matriz obteniendo las Js*/
+
+		for(x = 0; x < paux->filasMatrixComb; x++){
+			inicializa(stock, horizonte);
+			J = evalua(matrix[x], horizonte, 0, stock, paux);
+		//	printf("\n%d->\tJ = %f\n",x,J);
+			if(x == 0 || J < paux->Jmin){
+				paux->Jmin = J;
+				for(k=0; k<horizonte; k++){
+					paux->pedidosOptimos[k]=matrix[x][k];
+					paux->stockOptimo[k]=stock[k];
+				}
+			}
+		}
+		
+		printf("Jmin_%d: %f\n", i, paux->Jmin);
+		
+		//Sum(Jmin_i) Sumamos los minimos de los medicamentos
+		Jtotal = Jtotal + paux->Jmin;
+	}
+	/*Añadimos los costes de pedido y recogida (el ahorro real respecto 
+	al computo de medicamentos de forma individual)*/
+	Jtotal = Jtotal + numPedidos * (primero->coste_pedido + primero->coste_recogida);
+
+	printf("Coste total: %f\n", Jtotal);
+	//Recuperamos la referencia del principio
+	*medicinaPrimera = primero;
+
+	//Liberamos memoria de matrices y vectores reservados
+	liberaMatriz(primero->filasMatrixComb, matrix);
+	liberaVector(stock);
+
+	//Devolvemos el resultado de evaluar todos 
+	return Jtotal;
 }

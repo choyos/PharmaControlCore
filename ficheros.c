@@ -96,10 +96,12 @@ int leeMedicamentos(int horizonte, MEDICINE* med, char * fileName){
 		/*11+horizonte- Lectura del numero de posibles pedidos*/
 		fscanf(fp, "%d", &(med->nTamPedidos));
 		/*12+horizonte- Lectura del vector de posibles pedidos*/
-		inicializaVector(med->nTamPedidos, &(med->vTamPedidos));
+		inicializaVector(med->nTamPedidos+1, &(med->vTamPedidos));
 		for(i=0; i<med->nTamPedidos;i++){ 
 			fscanf(fp, "%d", med->vTamPedidos+i );
 		}
+		med->vTamPedidos[med->nTamPedidos] = 0;
+		med->nTamPedidos = med->nTamPedidos+1;
 		if( fclose(fp) ){
 			printf( "Error: fichero datos %s NO CERRADO\n", fileName );
 			error = -1;

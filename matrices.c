@@ -38,7 +38,7 @@ void imprimeMatriz(int numFilas, int numColumnas, int **matriz){
 void imprimeVector(int dim, int * vector){
 	int i;
 
-	for(i = 0;i < dim; i++){
+	for(i = 0; i < dim; i++){
 		printf("%d ", vector[i]);
 	}
 }

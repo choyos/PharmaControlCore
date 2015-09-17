@@ -43,13 +43,6 @@ int main(int argc, char *argv[]){
 	MEDICINE * listaMeds = NULL;	//Lista para mantener la información de los medicamentos
 	MEDICINE * medNueva = NULL;	//Puntero util para crear nuevos nodos de la lista
 	MEDICINE medAux;	//Estructura auxiliar para almacenar la información de los medicamentos
-	
-	//Matriz de posibilidades de pedidos reales
-	int g=0;
-
-	//Variables para la matriz base de combinaciones
-	int exp4=1;
-	int ** matrixComb = NULL;
 
 	//Variable para trabajar con cada posibilidad de pedido
 	int * posibilidad;
@@ -62,9 +55,7 @@ int main(int argc, char *argv[]){
 
 	//Variables para el cálculo de los costos y seguimiento de información
 	int x;
-	float J;
-	float Jmin;
-	int *stock;
+	float Jtotal;
 	int *stockOptimo;
 	int *vectorOptimo;
 
@@ -388,8 +379,7 @@ int main(int argc, char *argv[]){
 							inicializaVector(horizonte, &posibilidad);
 							int num;
 							int noCumple;
-							int primeraVez = 0;
-							int ** matrix;
+							
 							//Vectores comunes a todas las iteraciones
 							inicializaVector(horizonte, &stockOptimo);
 							inicializaVector(horizonte, &vectorOptimo);
@@ -427,56 +417,11 @@ int main(int argc, char *argv[]){
 										//Apertura de fichero y trabajo para evaluar función de coste
 										if(noCumple == 0){
 
-											n = 0;
-											inicializaMatriz(exp4, horizonte, &matrix);
-											
-											// Bucles para la obtencion de la matriz definitiva
-											for(k=0;k<exp4;k++){		// Accedemos todas las veces de las combinaciones posibles
-												for(j=0;j<horizonte;j++){		// En el recorrido
-													if(posibilidad[j]==1){	// Si es 1 se cambia por el valor correspondiente
-														matrix[n][j]=posibilidad[j]*matrixComb[k][g];
-														g++;
-														
-													}else{	//Si es 0 se deja igual
-														matrix[n][j] = posibilidad[j];
-													}							
-												}
-												g=0;	//Al finalizar cada pasada reiniciamos el contador g a 0
-												n++;	//Y pasamos a rellenar la siguiente fila
-											}
-
-//------------------------------------------Calculo de J------------------------------------------------------//
-											// Una vez obtenidas todas las posibles combinaciones
-											// para un determinado horizonte, procedemos al cálculo
-											// y consiguiente obtención de los días de pedidos
-											// útiles para el farmaceútico
-
-											inicializaVector(horizonte, &stock);
-
-											for(x=0; x<n; x++){
-												inicializa(stock, horizonte);
-												J = evalua(matrix[x], horizonte, 0, stock, &medAux);
-											//	printf("\n%d->\tJ = %f\n",x,J);
-												if(x==0){
-													Jmin = J;
-													for(k=0; k<horizonte; k++){
-														vectorOptimo[k]=matrix[x][k];
-														stockOptimo[k]=stock[k];
-													}
-												}
-												if(J <Jmin){
-													Jmin = J;
-													for(k=0; k<horizonte; k++){
-														vectorOptimo[k]=matrix[x][k];
-														stockOptimo[k]=stock[k];
-													}
-												}
-											}
-											liberaVector(medAux.vTamPedidos);
-											liberaVector(medAux.repartidos);
-											liberaVector(stock);
-											liberaMatriz(exp4, matrix);
-											
+											//Funcion en funciones.c
+											/*Realiza el calculo de el vector optimo para cada medicamento y almacena la información util
+											en el nodo correspondiente*/
+											Jtotal = EvaluaMedicinas(&listaMeds, horizonte, numPedidos, posibilidad);
+											printf("Coste total: %f\n", Jtotal);
 										}
 									}
 								}
@@ -484,7 +429,7 @@ int main(int argc, char *argv[]){
 						}
 						
 						//Mover el bloque para imprimir bien por pantalla/salida estandar
-						printf("Jmin= %f\nVector Óptimo de pedido:", Jmin);
+						printf("Jmin= %f\nVector Óptimo de pedido:", Jtotal);
 						numPedidos = 0;
 						for(x=0;x<horizonte; x++){
 							printf("%d ",vectorOptimo[x] );
@@ -506,11 +451,10 @@ int main(int argc, char *argv[]){
 						printf("\n\n");
 						printf("===============\n===Resultado===\n===============\n\n");
 						obtieneFechasPedidos(vectorOptimo, horizonte, FechasPedido);
-						error = Jmin;
+						error = Jtotal;
 						liberaVector(stockOptimo);
 						liberaMatriz(numPedidos, FechasPedido);
 						liberaVector(vectorOptimo);
-						liberaMatriz(exp4, matrixComb);
 						liberaVector(posibilidad);
 					}
 				}
