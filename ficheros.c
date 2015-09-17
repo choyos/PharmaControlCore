@@ -21,17 +21,55 @@ Nombre: César*/
 #define DOMINGO 6
 
 #define TAM_BUF 100
+#define TAM_FILE_NAME 20
 
-int ficheros(int horizonte, MEDICINE* med){
+int leeFicheros(char ** filesName){
+
+	int i = 0;
+	int error = 0;
+	FILE *fpd;
+	//Nombre del fichero en el que vienen los nombres del resto de ficheros
+	char * mainFile = "ficheros.pha";
+
+	fpd = fopen ( mainFile , "r" );
+	if(fpd == NULL){	//Caso de no apertura pasar el error 
+		error = -1;
+	}else{
+		//Lectura del fichero hasta que termine
+		//Reservamos memoria para la matriz
+		filesName = (char **) malloc(sizeof(*filesName));
+		filesName[0] = (char *) malloc(TAM_FILE_NAME*sizeof(char*));
+
+		//Leemos hasta el final del fichero
+		while(!feof(fpd)){
+			fscanf(fpd, "%s", filesName[i]); //Cada linea la almacenamos en un vector de cadenas de caracteres
+			i++;
+			//En cada pasada realizamos reserva dinamica de memoria para la nueva cadena
+			filesName = realloc(filesName, (i+1) * sizeof(*filesName));
+		    filesName[i] = malloc(TAM_FILE_NAME * sizeof(char*));		
+		}
+		error = i;
+		if( fclose(fpd) ){
+			error = -1;
+		}
+	}
+	for(i = 0; i<error; i++){
+		printf("%s\n", filesName[i]);
+	}
+
+	return error;
+}
+
+int leeMedicamentos(int horizonte, MEDICINE* med, char * fileName){
+	
 	FILE *fp;
 	int i;
 	int error = 0;	//Variable de error
 
-	fp = fopen ( "datos.pha" , "r" );
+	fp = fopen ( fileName , "r" );
 	if(fp == NULL){	//Caso de no apertura pasar el error 
 		error = -1;
 	}else{	//Caso de apertura
-		
 		/*1- Lectura del stock actual*/
 		fscanf(fp, "%d", &(med->stock));
 		/*2- Lectura del precio del medicamento*/
@@ -58,11 +96,16 @@ int ficheros(int horizonte, MEDICINE* med){
 		/*11+horizonte- Lectura del numero de posibles pedidos*/
 		fscanf(fp, "%d", &(med->nTamPedidos));
 		/*12+horizonte- Lectura del vector de posibles pedidos*/
-		inicializaVector(med->nTamPedidos, &(med->vTamPedidos));
+		inicializaVector(med->nTamPedidos+1, &(med->vTamPedidos));
 		for(i=0; i<med->nTamPedidos;i++){ 
 			fscanf(fp, "%d", med->vTamPedidos+i );
 		}
-		fclose ( fp );
+		med->vTamPedidos[med->nTamPedidos] = 0;
+		med->nTamPedidos = med->nTamPedidos+1;
+		if( fclose(fp) ){
+			printf( "Error: fichero datos %s NO CERRADO\n", fileName );
+			error = -1;
+		}
 	}
 	
 	return error;

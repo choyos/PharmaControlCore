@@ -27,20 +27,8 @@ float evalua(int* pedidos, int horizonte, int retraso, int* stock, MEDICINE *med
 	//Inicializacion de variables
 	int k;
 	float J = 0;
-	int *orders;
 	int noStock;
 
-	//Inicializacion de tablas
-	inicializaVector(horizonte, &orders);
-
-	/*Vemos cuando se realizan o no pedidos*/
-	for(k=0; k<horizonte; k++){
-		if(pedidos[k]==0){
-			orders[k] = 0;
-		}else{
-			orders[k] = 1;
-		}
-	}
 
 	//Calculo de J y stock
 	for(k=0;k<horizonte;k++){
@@ -57,23 +45,26 @@ float evalua(int* pedidos, int horizonte, int retraso, int* stock, MEDICINE *med
 		*/
 		if((stock[k])<med->minStock){
 			noStock = 1;
-			stock[k]=stock[k]+med->vTamPedidos[0];
-			pedidos[k]=med->vTamPedidos[0];
+			stock[k]=stock[k]+minimo(med->nTamPedidos, med->vTamPedidos);
+			pedidos[k]=minimo(med->nTamPedidos, med->vTamPedidos);
 		}else{
 			noStock = 0;
 		}
-		J = J+med->precio_med*pedidos[k]+(med->precio_alm+med->coste_oportunidad)*stock[k]+(med->coste_pedido+med->coste_recogida)*orders[k]+noStock*(med->coste_sin_stock);
+		J = J+med->precio_med*pedidos[k]+(med->precio_alm+med->coste_oportunidad)*stock[k]+noStock*(med->coste_sin_stock);
 	}
-
 	
-	liberaVector(orders);		
 	return J;
 }
 
-
-void inicializa(int * v,int tam){
-	int x;
-	for(x=0; x<tam;x++){
-		v[x]=0;
+int minimo(int dim, int * vector){
+	int i;
+	int minimo;
+	for(i = 0; i<dim; i++){
+		if(i == 0){
+			minimo = vector[i];
+		}else if(vector[i] < minimo && minimo != 0){
+			minimo = vector[i];
+		}
 	}
+	return minimo;
 }

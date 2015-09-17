@@ -14,8 +14,8 @@ typedef struct NODEMEDICINE{
 	int stock;		/*Stock actual*/
 	float precio_med;		/*Precio de compra del medicamento*/
 	float precio_alm;		/*Precio de almacenamiento del medicamento*/
-	float coste_pedido;		/*Coste de realizar un pedido*/
-	float coste_recogida;	/*Coste de recibir un pedido*/
+	float coste_pedido;		/*Coste de realizar un pedido (sera igual para todos)*/
+	float coste_recogida;	/*Coste de recibir un pedido (sera igual para todos)*/
 	float coste_sin_stock;	/*Coste por quedarse sin stock*/
 	float coste_oportunidad;/*Coste por tener en stock*/
 	int* repartidos; 	/*Estimacion de repartidos*/
@@ -23,6 +23,13 @@ typedef struct NODEMEDICINE{
 	int minStock;		/*Stock minimo para que no haya desabastecimiento*/
 	int nTamPedidos;	/*Numero de posibilidades de pedidos*/
 	int* vTamPedidos;	/*Diferentes posibilidades de pedidos*/
+	int filasMatrixComb;	/*Número de filas de la matriz de combinaciones*/
+	int ** matrixComb;	/*Matriz para generar todas las combinaciones posibles de pedidos en función del número de días de pedidos requeridos*/
+	float Jmin;			/*Valor minimo obtenido para este medicamento*/
+	int * stockOptimo;	/*Vector con la trayectoria optima del stock*/
+	int * pedidosOptimos;	/*Vector con los pedidos optimos para este medicamento*/
+	struct NODEMEDICINE * sig;	/*Puntero al siguiente nodo de la lista*/
+
 }MEDICINE;
 
 /* Estructura para el manejo de información ligada a cada una los laboratorios. 

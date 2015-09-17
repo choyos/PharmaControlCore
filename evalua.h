@@ -14,5 +14,4 @@ Nombre: César*/
 //Función que evalua cada posibilidad para devolver un coste total de medicamentos
 float evalua(int* pedidos, int horizonte, int retraso, int* stock, MEDICINE *med);
 
-//Función para inicializar los vectores a 0
-void inicializa(int * v,int tam);
+int minimo(int dim, int * vector);

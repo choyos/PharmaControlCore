@@ -11,5 +11,8 @@ Nombre: César*/
 #include "typedef.h"
 #include <time.h>
 
-//Función que evalua cada posibilidad para devolver un coste total de medicamentos
-int ficheros(int horizonte, MEDICINE* med);
+//Función que realiza la lectura de un fichero que contiene los nombres de los ficheros con información de los medicamentos
+int leeFicheros(char ** fileNames);
+
+//Función que realiza la lectura de un fichero con los datos necesarios de un medicamento
+int leeMedicamentos(int horizonte, MEDICINE* med, char * fileName);

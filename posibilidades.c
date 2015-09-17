@@ -13,6 +13,7 @@ Nombre: César*/
 #include <time.h>
 #include "typedef.h"
 #include "matrices.h"
+#include "funciones.h"
 
 
 #define LUNES 0
@@ -22,6 +23,7 @@ Nombre: César*/
 #define VIERNES 4
 #define SABADO 5
 #define DOMINGO 6
+#define TAM_FILE_NAME 20
 
 int main(int argc, char *argv[]){
 	printf("\n");
@@ -36,27 +38,32 @@ int main(int argc, char *argv[]){
 	int n;		//Auxiliar para recalculo y traspaso de matrices
 	int limite=1;	//Limite para el calculo del tope de posibilidades
 	int error=0;	//Variable de error
-	MEDICINE medicine;	//Estructura para mantener la información del medicamento
-	//Matriz de posibilidades de pedidos reales
-	int g=0;
 
-	//Matriz base de combinaciones
-	int exp4=1;
-	int ** matrixComb = NULL;
+	//Variables para el trabajo con la lista de medicamentos
+	MEDICINE * listaMeds = NULL;	//Lista para mantener la información de los medicamentos
+	MEDICINE * medNueva = NULL;	//Puntero util para crear nuevos nodos de la lista
+	MEDICINE medAux;	//Estructura auxiliar para almacenar la información de los medicamentos
 
+	//Variable para trabajar con cada posibilidad de pedido
 	int * posibilidad;
 
+	//Variables para trabajo con las posibilidades de pedido
 	int numPedidos;
 	int numDiasNo=argc-3;
 	int diasMes;
 	int aux=0;
 
+	//Variables para el cálculo de los costos y seguimiento de información
 	int x;
-	float J;
-	float Jmin;
-	int *stock;
+	float Jtotal;
 	int *stockOptimo;
 	int *vectorOptimo;
+
+	//Variable para el trabajo con los nombres de los ficheros de datos
+	char ** filesName = NULL;
+
+	//Variable para el conteo del número de medicamentos
+	int numMed = 0;
 
 	
 	/*Comprobamos que el numero de argumentos recibidos es el correto*/
@@ -297,140 +304,124 @@ int main(int argc, char *argv[]){
 						printf("dd/mm/yyyy\n");
 					/*Comprobamos si la fecha está dentro de fechas posibles*/
 					}else if(error==-6){
-						printf("ERROR6:\nFecha incorrecta, fuera del horizonte");
+						printf("ERROR6:\nFecha incorrecta, fuera del horizonte\n");
 					}else{
 
-/*--------------------------------------------------------------------------
-------------------------Calculo de primera matriz---------------------------
---------------------------------------------------------------------------*/
-						for(j=0;j<horizonte;j++){
-							limite=limite*2;
-						}
-						
+						/*Obtención de la información relativa a los medicamentos*/
+						/*Lectura del fichero con los nombres de los ficheros con 
+						información de los medicamentos*/
+						FILE *fpd;
+						//Nombre del fichero en el que vienen los nombres del resto de ficheros
+						char * mainFile = "ficheros.pha";
 
-						inicializaVector(horizonte, &posibilidad);
-						int num;
-						int noCumple;
-						int primeraVez = 0;
-						int ** matrix;
-						//Vectores comunes a todas las iteraciones
-						inicializaVector(horizonte, &stockOptimo);
-						inicializaVector(horizonte, &vectorOptimo);
+						fpd = fopen ( mainFile , "r" );
+						if(fpd == NULL){	//Caso de no apertura pasar el error 
+							error = -7;
+						}else{
+							//Lectura del fichero hasta que termine
+							//Reservamos memoria para la matriz
+							filesName = (char **) malloc(sizeof(*filesName));
+							filesName[0] = (char *) malloc(TAM_FILE_NAME*sizeof(char*));
 
-						for(num = 0; num<limite; num++){
-							//Inicializamos noCumple a 0 para cada posibilidad//
-							noCumple = 0;
-
-							convIntToBin(num, horizonte, posibilidad);
-
-							//Comprueba que cumple dias no posibles//
-							for(i = 0; i<horizonte; i++){
-								if(diasNO[i] == 1 && posibilidad[i] == 1){
-									noCumple = 1;
-								}
+							//Leemos hasta el final del fichero
+							while(!feof(fpd)){
+								fscanf(fpd, "%s", filesName[numMed]); //Cada linea la almacenamos en un vector de cadenas de caracteres
+								numMed++;
+								//En cada pasada realizamos reserva dinamica de memoria para la nueva cadena
+								filesName = realloc(filesName, (numMed+1) * sizeof(*filesName));
+							    filesName[numMed] = malloc(TAM_FILE_NAME * sizeof(char*));		
 							}
-							//Comprueba pedidos consecutivos//
-							if(noCumple == 0){
-								for(i = 1; i<horizonte; i++){
-									if(posibilidad[i] == 1 && posibilidad[i-1] == 1){
+							if( fclose(fpd) ){
+								error = -7;
+							}
+						}
+						for(i = 0; i<numMed; i++){
+							printf("%s\n", filesName[i]);
+						}
+						if(error == -7){
+							printf("ERROR 7:\nLectura del fichero para acceder a información de medicamentos no válida\n");
+						}else{
+
+							/* Realizamos ahora la lectura de la información de cada uno de los 
+							medicamentos de su correspondiente archivo*/
+							for(i = 0; i<numMed; i++){
+								/*
+									Se realizan las operaciones pertinentes
+									de apertura, lectura y cerrado de fichero
+									con el que intercambiar información con
+									el programa en php para la web.
+									Se almacenan los datos en la estructura 
+									del medicamento.
+								*/
+								if(leeMedicamentos(horizonte, &medAux, filesName[i]) == -1){
+									printf("ERROR 8:\nLectura del fichero %s no válida\n", filesName[i]);
+									error = -8;
+									break;
+								}
+								medNueva = CreaNodoMed( medAux.stock, medAux.precio_med, medAux.precio_alm, medAux.coste_pedido, medAux.coste_recogida, medAux.coste_sin_stock, medAux.coste_oportunidad, medAux.repartidos, medAux.maxStock, medAux.minStock, medAux.nTamPedidos, medAux.vTamPedidos, horizonte);
+								EnlazaMedicinas (medNueva, &listaMeds);
+							}
+						
+							//Generamos las matrices de posibilidades para todos los fármacos	
+							MatrizCombMedicinas(&listaMeds, numPedidos);
+
+							//Posibilidad de mostrar por pantalla toda la información de todos los fármacos
+							ImprimeMedicinas(listaMeds, horizonte, numPedidos);
+
+	/*--------------------------------------------------------------------------
+	------------------------Calculamos posibilidad a posibilidad----------------
+	--------------------------------------------------------------------------*/
+							for(j=0;j<horizonte;j++){
+								limite=limite*2;
+							}
+							
+
+							inicializaVector(horizonte, &posibilidad);
+							int num;
+							int noCumple;
+							
+							//Vectores comunes a todas las iteraciones
+							inicializaVector(horizonte, &stockOptimo);
+							inicializaVector(horizonte, &vectorOptimo);
+
+							for(num = 0; num<limite; num++){
+								//Inicializamos noCumple a 0 para cada posibilidad//
+								noCumple = 0;
+
+								convIntToBin(num, horizonte, posibilidad);
+
+								//Comprueba que cumple dias no posibles//
+								for(i = 0; i<horizonte; i++){
+									if(diasNO[i] == 1 && posibilidad[i] == 1){
 										noCumple = 1;
 									}
 								}
-								//Comprueba número de pedidos solicitados//
+								//Comprueba pedidos consecutivos//
 								if(noCumple == 0){
-									int auxNumPedidos = 0;
-									for(i = 0; i<horizonte; i++){
-										if(posibilidad[i] == 1){
-											auxNumPedidos++;
+									for(i = 1; i<horizonte; i++){
+										if(posibilidad[i] == 1 && posibilidad[i-1] == 1){
+											noCumple = 1;
 										}
 									}
-									if(auxNumPedidos != numPedidos){
-										noCumple = 1;
-									}
-									//Apertura de fichero y trabajo para evaluar función de coste
+									//Comprueba número de pedidos solicitados//
 									if(noCumple == 0){
-										/*
-												Se realizan las operaciones pertinentes
-												de apertura, lectura y cerrado de fichero
-												con el que intercambiar información con
-												el programa en php para la web.
-												Se almacenan los datos en la estructura 
-												del medicamento.
-										*/
-										//Lectura del fichero
-										if(ficheros(horizonte, &medicine) == -1){
-											printf("ERROR7: Lectura de fichero no realizada\n");
-											error = -7;
-										}else{
-											if(primeraVez == 0){
-												primeraVez = 1;
-												
-												//Obtenemos primero el numero de combinaciones posibles								
-												for(i=0;i<numPedidos;i++){
-													exp4=exp4*medicine.nTamPedidos;
-												}
-												
-												int divisor = exp4/medicine.nTamPedidos; //Variable auxiliar para acceder al vector de la forma adecuada
-												//Matriz de combinaciones
-												inicializaMatriz(exp4, numPedidos, &matrixComb);
-												
-												for(j=0;j<numPedidos;j++){	//Luego por filas
-													for(i=0;i<exp4;i++){	//Primero por columnas
-														matrixComb[i][j]=medicine.vTamPedidos[(i/divisor)%medicine.nTamPedidos];
-													}
-													divisor=divisor/medicine.nTamPedidos;	//Disminuimos la auxiliar para acceder a la posicion correcta
-												}
+										int auxNumPedidos = 0;
+										for(i = 0; i<horizonte; i++){
+											if(posibilidad[i] == 1){
+												auxNumPedidos++;
 											}
+										}
+										if(auxNumPedidos != numPedidos){
+											noCumple = 1;
+										}
+										//Apertura de fichero y trabajo para evaluar función de coste
+										if(noCumple == 0){
 
-											n = 0;
-											inicializaMatriz(exp4, horizonte, &matrix);
-											
-											// Bucles para la obtencion de la matriz definitiva
-											for(k=0;k<exp4;k++){		// Accedemos todas las veces de las combinaciones posibles
-												for(j=0;j<horizonte;j++){		// En el recorrido
-													if(posibilidad[j]==1){	// Si es 1 se cambia por el valor correspondiente
-														matrix[n][j]=posibilidad[j]*matrixComb[k][g];
-														g++;
-														
-													}else{	//Si es 0 se deja igual
-														matrix[n][j] = posibilidad[j];
-													}							
-												}
-												g=0;	//Al finalizar cada pasada reiniciamos el contador g a 0
-												n++;	//Y pasamos a rellenar la siguiente fila
-											}
-
-//------------------------------------------Calculo de J------------------------------------------------------//
-											// Una vez obtenidas todas las posibles combinaciones
-											// para un determinado horizonte, procedemos al cálculo
-											// y consiguiente obtención de los días de pedidos
-											// útiles para el farmaceútico
-
-											inicializaVector(horizonte, &stock);
-
-											for(x=0; x<n; x++){
-												inicializa(stock, horizonte);
-												J = evalua(matrix[x], horizonte, 0, stock, &medicine);
-											//	printf("\n%d->\tJ = %f\n",x,J);
-												if(x==0){
-													Jmin = J;
-													for(k=0; k<horizonte; k++){
-														vectorOptimo[k]=matrix[x][k];
-														stockOptimo[k]=stock[k];
-													}
-												}
-												if(J <Jmin){
-													Jmin = J;
-													for(k=0; k<horizonte; k++){
-														vectorOptimo[k]=matrix[x][k];
-														stockOptimo[k]=stock[k];
-													}
-												}
-											}
-											liberaVector(medicine.vTamPedidos);
-											liberaVector(medicine.repartidos);
-											liberaVector(stock);
-											liberaMatriz(exp4, matrix);
+											//Funcion en funciones.c
+											/*Realiza el calculo de el vector optimo para cada medicamento y almacena la información util
+											en el nodo correspondiente*/
+											Jtotal = EvaluaMedicinas(&listaMeds, horizonte, numPedidos, posibilidad);
+											printf("Coste total: %f\n", Jtotal);
 										}
 									}
 								}
@@ -438,7 +429,7 @@ int main(int argc, char *argv[]){
 						}
 						
 						//Mover el bloque para imprimir bien por pantalla/salida estandar
-						printf("Jmin= %f\nVector Óptimo de pedido:", Jmin);
+						printf("Jmin= %f\nVector Óptimo de pedido:", Jtotal);
 						numPedidos = 0;
 						for(x=0;x<horizonte; x++){
 							printf("%d ",vectorOptimo[x] );
@@ -460,11 +451,10 @@ int main(int argc, char *argv[]){
 						printf("\n\n");
 						printf("===============\n===Resultado===\n===============\n\n");
 						obtieneFechasPedidos(vectorOptimo, horizonte, FechasPedido);
-						error = Jmin;
+						error = Jtotal;
 						liberaVector(stockOptimo);
 						liberaMatriz(numPedidos, FechasPedido);
 						liberaVector(vectorOptimo);
-						liberaMatriz(exp4, matrixComb);
 						liberaVector(posibilidad);
 					}
 				}

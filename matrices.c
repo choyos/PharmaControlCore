@@ -27,7 +27,7 @@ void imprimeMatriz(int numFilas, int numColumnas, int **matriz){
 	int j;	//Variable auxiliar para recorrer columnas
 
 	for(i=0;i<numFilas;i++){
-		printf("%d->\t",i);
+		printf("\t");
 		for(j=0;j<numColumnas;j++){
 			printf("%d ",matriz[i][j]);
 		}
@@ -38,7 +38,7 @@ void imprimeMatriz(int numFilas, int numColumnas, int **matriz){
 void imprimeVector(int dim, int * vector){
 	int i;
 
-	for(i = 0;i < dim; i++){
+	for(i = 0; i < dim; i++){
 		printf("%d ", vector[i]);
 	}
 }
@@ -84,4 +84,11 @@ void convIntToBin(int num, int bits,int *posibilidad){
 		posibilidad[i] = 0;
 	}
 	
+}
+
+void inicializa(int * v,int tam){
+	int x;
+	for(x=0; x<tam;x++){
+		v[x]=0;
+	}
 }
