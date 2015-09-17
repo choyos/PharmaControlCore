@@ -27,7 +27,7 @@ void imprimeMatriz(int numFilas, int numColumnas, int **matriz){
 	int j;	//Variable auxiliar para recorrer columnas
 
 	for(i=0;i<numFilas;i++){
-		printf("%d->\t",i);
+		printf("\t");
 		for(j=0;j<numColumnas;j++){
 			printf("%d ",matriz[i][j]);
 		}

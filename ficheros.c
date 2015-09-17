@@ -66,7 +66,6 @@ int leeMedicamentos(int horizonte, MEDICINE* med, char * fileName){
 	int i;
 	int error = 0;	//Variable de error
 
-		printf("Apertura exitosa\n");
 	fp = fopen ( fileName , "r" );
 	if(fp == NULL){	//Caso de no apertura pasar el error 
 		error = -1;
@@ -101,10 +100,7 @@ int leeMedicamentos(int horizonte, MEDICINE* med, char * fileName){
 		for(i=0; i<med->nTamPedidos;i++){ 
 			fscanf(fp, "%d", med->vTamPedidos+i );
 		}
-		if( !fclose(fp) )
-	      printf( "Fichero datos %s cerrado\n",fileName );
-		else
-		{
+		if( fclose(fp) ){
 			printf( "Error: fichero datos %s NO CERRADO\n", fileName );
 			error = -1;
 		}

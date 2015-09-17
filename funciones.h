@@ -17,6 +17,8 @@ void EnlazaMedicinas (MEDICINE * medicinaNueva, MEDICINE ** medicinaPrimera);	//
 
 void BorraMedicinas (MEDICINE ** medicinaPrimera); //Borra la lista completa de medicinas liberando la memoria.
 
-void ImprimeMedicinas (MEDICINE * pAnterior, int horizonte);	//Imprime todos los datos de todos los medicamentos leidos
+void ImprimeMedicinas (MEDICINE * pAnterior, int horizonte, int numPedidos);	//Imprime todos los datos de todos los medicamentos leidos
+
+void MatrizCombMedicinas (MEDICINE ** medicinaPrimera, int numPedidos);		//Realiza el calculo de la matriz de combinaciones de las diferentes medicinas y las añade a la estructura
 
 #endif

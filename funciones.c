@@ -64,27 +64,12 @@ void EnlazaMedicinas (MEDICINE * medicinaNueva, MEDICINE ** medicinaPrimera)	//E
 	}
 }
 
-void BorraMedicinas (MEDICINE ** medicinaPrimera){
-  MEDICINE *paux = NULL;
-  while (*medicinaPrimera != NULL)
-  {
-    paux = *medicinaPrimera;
-    *medicinaPrimera = paux->sig;
-	if( paux->repartidos != NULL)			
-		liberaVector(paux->repartidos);
-	if( paux->vTamPedidos != NULL)			
-		liberaVector(paux->vTamPedidos);
-	if(paux->matrixComb != NULL)
-		liberaMatriz(paux->filasMatrixComb, paux->matrixComb);
 
-    free(paux);
-  }
-}
-
-void ImprimeMedicinas (MEDICINE * pAnterior, int horizonte)
+void ImprimeMedicinas (MEDICINE * pAnterior, int horizonte, int numPedidos)
 {
 	int i = 0;
 	int j;
+	int x;
 	while (pAnterior != NULL)
 	{
 		i++;
@@ -105,7 +90,71 @@ void ImprimeMedicinas (MEDICINE * pAnterior, int horizonte)
 		printf("\tCantidades posibles de pedido %d:\t", i);
 		for(j = 0; j<pAnterior->nTamPedidos; j++)
 			printf("%d ", pAnterior->vTamPedidos[j]);
+		printf("\n\tFilas de la matriz de combinaciones %d: \t%d\n", i, pAnterior->filasMatrixComb);
+		printf("\tMatriz de combinaciones %d:\t\t", i);
+	//	imprimeMatriz(pAnterior->filasMatrixComb, numPedidos, pAnterior->matrixComb);
+
+		for(x=0;x<pAnterior->filasMatrixComb;x++){
+			for(j=0;j<numPedidos;j++){
+				printf("%d ",pAnterior->matrixComb[x][j]);
+			}
+			printf("\n");
+			printf("\t\t\t\t\t\t");
+		}
+
 		printf("\n\n");
 		pAnterior = pAnterior->sig;
 	}
+}
+
+void MatrizCombMedicinas (MEDICINE ** medicinaPrimera, int numPedidos){
+	
+	MEDICINE * paux = NULL;
+	MEDICINE * primero = *medicinaPrimera;
+	
+	int j;
+	int i;
+
+	int divisor;
+
+
+	
+	while(*medicinaPrimera != NULL){
+		paux = *medicinaPrimera;
+		*medicinaPrimera = paux->sig;
+
+		paux->filasMatrixComb = 1;
+		for(i=0;i<numPedidos;i++){
+			paux->filasMatrixComb=(paux->filasMatrixComb)*(paux->nTamPedidos);
+		}
+
+		divisor = (paux->filasMatrixComb)/(paux->nTamPedidos); //Variable auxiliar para acceder al vector de la forma adecuada
+		//Matriz de combinaciones
+		inicializaMatriz((paux->filasMatrixComb), numPedidos, &(paux->matrixComb));
+		
+		for(j=0;j<numPedidos;j++){	//Luego por filas
+			for(i=0;i<(paux->filasMatrixComb);i++){	//Primero por columnas
+				paux->matrixComb[i][j]=paux->vTamPedidos[(i/divisor)%(paux->nTamPedidos)];
+			}
+			divisor=divisor/(paux->nTamPedidos);	//Disminuimos la auxiliar para acceder a la posicion correcta
+		}
+	}
+	//Recuperamos la referencia de la lista
+	*medicinaPrimera = primero;
+}
+
+void BorraMedicinas (MEDICINE ** medicinaPrimera){
+  MEDICINE *paux = NULL;
+  while (*medicinaPrimera != NULL){
+    paux = *medicinaPrimera;
+    *medicinaPrimera = paux->sig;
+	if( paux->repartidos != NULL)			
+		liberaVector(paux->repartidos);
+	if( paux->vTamPedidos != NULL)			
+		liberaVector(paux->vTamPedidos);
+	if(paux->matrixComb != NULL)
+		liberaMatriz(paux->filasMatrixComb, paux->matrixComb);
+
+    free(paux);
+  }
 }
