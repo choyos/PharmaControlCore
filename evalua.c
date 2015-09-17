@@ -57,8 +57,8 @@ float evalua(int* pedidos, int horizonte, int retraso, int* stock, MEDICINE *med
 		*/
 		if((stock[k])<med->minStock){
 			noStock = 1;
-			stock[k]=stock[k]+med->vTamPedidos[0];
-			pedidos[k]=med->vTamPedidos[0];
+			stock[k]=stock[k]+minimo(med->nTamPedidos, med->vTamPedidos);
+			pedidos[k]=minimo(med->nTamPedidos, med->vTamPedidos);
 		}else{
 			noStock = 0;
 		}
@@ -68,4 +68,17 @@ float evalua(int* pedidos, int horizonte, int retraso, int* stock, MEDICINE *med
 	
 	liberaVector(orders);		
 	return J;
+}
+
+int minimo(int dim, int * vector){
+	int i;
+	int minimo;
+	for(i = 0; i<dim; i++){
+		if(i == 0){
+			minimo = vector[i];
+		}else if(vector[i] < minimo){
+			minimo = vector[i];
+		}
+	}
+	return minimo;
 }

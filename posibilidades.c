@@ -13,6 +13,7 @@ Nombre: César*/
 #include <time.h>
 #include "typedef.h"
 #include "matrices.h"
+#include "funciones.h"
 
 
 #define LUNES 0
@@ -37,7 +38,9 @@ int main(int argc, char *argv[]){
 	int n;		//Auxiliar para recalculo y traspaso de matrices
 	int limite=1;	//Limite para el calculo del tope de posibilidades
 	int error=0;	//Variable de error
-	MEDICINE medicine;	//Estructura para mantener la información del medicamento
+	MEDICINE * listaMeds = NULL;	//Lista para mantener la información de los medicamentos
+	MEDICINE * medNueva = NULL;	//Puntero util para crear nuevos nodos de la lista
+	MEDICINE medAux;	//Estructura auxiliar para almacenar la información de los medicamentos
 	//Matriz de posibilidades de pedidos reales
 	int g=0;
 
@@ -307,9 +310,17 @@ int main(int argc, char *argv[]){
 
 						/*Obtención de la información relativa a los medicamentos*/
 						numMed = leeFicheros(filesName);
-
-						printf("Numero de medicamentos: %d\n", numMed);
-
+						char * pruebas = "datos.pha";
+						for(i = 0; i<numMed; i++){
+							printf("Pasada->%d\n", i);
+							leeMedicamentos(horizonte, &medAux, pruebas);
+							printf("leeMedicamentos\n");
+							medNueva = CreaNodoMed( medAux.stock, medAux.precio_med, medAux.precio_alm, medAux.coste_pedido, medAux.coste_recogida, medAux.coste_sin_stock, medAux.coste_oportunidad, medAux.repartidos, medAux.maxStock, medAux.minStock, medAux.nTamPedidos, medAux.vTamPedidos, horizonte);
+							printf("CreaNodoMed\n");
+							EnlazaMedicinas (medNueva, &listaMeds);
+							printf("EnlazaMedicinas\n");
+						}
+						ImprimeMedicinas(listaMeds, horizonte);
 /*--------------------------------------------------------------------------
 ------------------------Calculamos posibilidad a posibilidad----------------
 --------------------------------------------------------------------------*/
@@ -368,7 +379,7 @@ int main(int argc, char *argv[]){
 												del medicamento.
 										*/
 										//Lectura del fichero
-										if(leeMedicamentos(horizonte, &medicine, filesName[i]) == -1){
+										if(leeMedicamentos(horizonte, &medAux, filesName[i]) == -1){
 											printf("ERROR7: Lectura de fichero no realizada\n");
 											error = -7;
 										}else{
@@ -377,18 +388,18 @@ int main(int argc, char *argv[]){
 												
 												//Obtenemos primero el numero de combinaciones posibles								
 												for(i=0;i<numPedidos;i++){
-													exp4=exp4*medicine.nTamPedidos;
+													exp4=exp4*medAux.nTamPedidos;
 												}
 												
-												int divisor = exp4/medicine.nTamPedidos; //Variable auxiliar para acceder al vector de la forma adecuada
+												int divisor = exp4/medAux.nTamPedidos; //Variable auxiliar para acceder al vector de la forma adecuada
 												//Matriz de combinaciones
 												inicializaMatriz(exp4, numPedidos, &matrixComb);
 												
 												for(j=0;j<numPedidos;j++){	//Luego por filas
 													for(i=0;i<exp4;i++){	//Primero por columnas
-														matrixComb[i][j]=medicine.vTamPedidos[(i/divisor)%medicine.nTamPedidos];
+														matrixComb[i][j]=medAux.vTamPedidos[(i/divisor)%medAux.nTamPedidos];
 													}
-													divisor=divisor/medicine.nTamPedidos;	//Disminuimos la auxiliar para acceder a la posicion correcta
+													divisor=divisor/medAux.nTamPedidos;	//Disminuimos la auxiliar para acceder a la posicion correcta
 												}
 											}
 
@@ -420,7 +431,7 @@ int main(int argc, char *argv[]){
 
 											for(x=0; x<n; x++){
 												inicializa(stock, horizonte);
-												J = evalua(matrix[x], horizonte, 0, stock, &medicine);
+												J = evalua(matrix[x], horizonte, 0, stock, &medAux);
 											//	printf("\n%d->\tJ = %f\n",x,J);
 												if(x==0){
 													Jmin = J;
@@ -437,8 +448,8 @@ int main(int argc, char *argv[]){
 													}
 												}
 											}
-											liberaVector(medicine.vTamPedidos);
-											liberaVector(medicine.repartidos);
+											liberaVector(medAux.vTamPedidos);
+											liberaVector(medAux.repartidos);
 											liberaVector(stock);
 											liberaMatriz(exp4, matrix);
 										}

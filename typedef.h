@@ -23,6 +23,9 @@ typedef struct NODEMEDICINE{
 	int minStock;		/*Stock minimo para que no haya desabastecimiento*/
 	int nTamPedidos;	/*Numero de posibilidades de pedidos*/
 	int* vTamPedidos;	/*Diferentes posibilidades de pedidos*/
+	int filasMatrixComb;	/*Número de filas de la matriz de combinaciones*/
+	int ** matrixComb;	/*Matriz para generar todas las combinaciones posibles de pedidos en función del número de días de pedidos requeridos*/
+	struct NODEMEDICINE * sig; 
 }MEDICINE;
 
 /* Estructura para el manejo de información ligada a cada una los laboratorios. 

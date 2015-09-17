@@ -11,10 +11,12 @@ Login: ceshoymar */
 #include "typedef.h"
 
 //Crea un nodo de tipo medicina, con la información leida de la trama.
-MEDICINE * CreaNodoMed ( char* med_name,char* code, int stock, float precio_med, float precio_alm, float coste_pedido, float coste_recogida, float coste_sin_stock, float coste_oportunidad, int* repartidos, int maxStock, int minStock, int nTamPedidos, int* vTamPedidos);
+MEDICINE * CreaNodoMed ( int stock, float precio_med, float precio_alm, float coste_pedido, float coste_recogida, float coste_sin_stock, float coste_oportunidad, int* repartidos, int maxStock, int minStock, int nTamPedidos, int* vTamPedidos, int horizonte);
 
-void EnlazaMedicinasOrdenadas (MEDICINE * medicinaNueva, MEDICINE ** medicinaPrimera);	//Crea la lista de medicinas enlazando, de forma ordenada según criterio a fijar.
+void EnlazaMedicinas (MEDICINE * medicinaNueva, MEDICINE ** medicinaPrimera);	//Crea la lista de medicinas enlazando, de forma ordenada según criterio a fijar.
 
 void BorraMedicinas (MEDICINE ** medicinaPrimera); //Borra la lista completa de medicinas liberando la memoria.
+
+void ImprimeMedicinas (MEDICINE * pAnterior, int horizonte);	//Imprime todos los datos de todos los medicamentos leidos
 
 #endif

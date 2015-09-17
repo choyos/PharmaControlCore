@@ -27,12 +27,12 @@ int leeFicheros(char ** filesName){
 
 	int i = 0;
 	int error = 0;
-	FILE *fp;
+	FILE *fpd;
 	//Nombre del fichero en el que vienen los nombres del resto de ficheros
 	char * mainFile = "ficheros.pha";
 
-	fp = fopen ( mainFile , "r" );
-	if(fp == NULL){	//Caso de no apertura pasar el error 
+	fpd = fopen ( mainFile , "r" );
+	if(fpd == NULL){	//Caso de no apertura pasar el error 
 		error = -1;
 	}else{
 		//Lectura del fichero hasta que termine
@@ -41,17 +41,20 @@ int leeFicheros(char ** filesName){
 		filesName[0] = (char *) malloc(TAM_FILE_NAME*sizeof(char*));
 
 		//Leemos hasta el final del fichero
-		while(!feof(fp)){
-			fscanf(fp, "%s", filesName[i]); //Cada linea la almacenamos en un vector de cadenas de caracteres
+		while(!feof(fpd)){
+			fscanf(fpd, "%s", filesName[i]); //Cada linea la almacenamos en un vector de cadenas de caracteres
 			i++;
 			//En cada pasada realizamos reserva dinamica de memoria para la nueva cadena
 			filesName = realloc(filesName, (i+1) * sizeof(*filesName));
 		    filesName[i] = malloc(TAM_FILE_NAME * sizeof(char*));		
 		}
 		error = i;
-		if( fclose(fp) ){
+		if( fclose(fpd) ){
 			error = -1;
 		}
+	}
+	for(i = 0; i<error; i++){
+		printf("%s\n", filesName[i]);
 	}
 
 	return error;
@@ -63,11 +66,11 @@ int leeMedicamentos(int horizonte, MEDICINE* med, char * fileName){
 	int i;
 	int error = 0;	//Variable de error
 
+		printf("Apertura exitosa\n");
 	fp = fopen ( fileName , "r" );
 	if(fp == NULL){	//Caso de no apertura pasar el error 
 		error = -1;
 	}else{	//Caso de apertura
-		
 		/*1- Lectura del stock actual*/
 		fscanf(fp, "%d", &(med->stock));
 		/*2- Lectura del precio del medicamento*/

@@ -8,24 +8,33 @@ Login: ceshoymar */
 #include <string.h>
 #include "funciones.h"
 #include "typedef.h"
+#include "matrices.h"
 
-MEDICINE * CreaNodoMed ( char* med_name,char* code, int stock, float precio_med, float precio_alm, float coste_pedido, float coste_recogida, float coste_sin_stock, float coste_oportunidad, int* repartidos, int maxStock, int minStock, int nTamPedidos, int* vTamPedidos)
+MEDICINE * CreaNodoMed ( int stock, float precio_med, float precio_alm, float coste_pedido, float coste_recogida, float coste_sin_stock, float coste_oportunidad, int* repartidos, int maxStock, int minStock, int nTamPedidos, int* vTamPedidos, int horizonte)
 {
+	int i;
 	MEDICINE *p = NULL;
 	p = (MEDICINE *) malloc(sizeof(MEDICINE));	//Reservamos memoria para la estructura program
-	if (NULL != p)
-    {
-		p->programa = (char*)malloc( ( strlen(programa)+1) * sizeof(char));	//Reservamos memoria para la tabla de caracteres que lleva el nombre del programa
-    	strcpy( p->programa, programa);	//Copiamos en el campo programa de esta estructura, la cadena de caracteres leida en la trama.
-      
-    	p->genero = (char*)malloc( ( strlen(genero)+1) * sizeof(char));	//idem que con programa
-    	strcpy( p->genero, genero);
+	if (p != NULL){
 		
 		//Inicializamos los siguientes campos de la estructura;
-    	p->horaInicio = horaInicio;	//hora de comienzo
-    	p->minInicio = minInicio;	//minuto de comienzo
-    	p->horaFin = horaFin;		//hora en el que finaliza
-    	p->minFin = minFin;			//minuto en el que finaliza
+    	p->stock = stock;
+    	p->precio_med = precio_med;	
+    	p->precio_alm = precio_alm;
+    	p->coste_pedido = coste_pedido;
+    	p->coste_recogida = coste_recogida;
+    	p->coste_sin_stock = coste_sin_stock;
+    	p->coste_oportunidad = coste_oportunidad;
+    	p->repartidos = (int*) malloc( horizonte * sizeof(int));
+    	for(i = 0; i<horizonte; i++)
+    		p->repartidos[i] = repartidos[i];
+    	p->maxStock = maxStock;
+    	p->minStock = minStock;
+    	p->nTamPedidos = nTamPedidos;
+    	p->vTamPedidos = (int*) malloc((nTamPedidos+1) * sizeof(int));
+    	for(i = 0; i<nTamPedidos; i++)
+    		p->vTamPedidos[i] = vTamPedidos[i];
+    	p->vTamPedidos[nTamPedidos] = 0;
     	p->sig = NULL;				//el puntero al siguiente programa de la lista a NULL.
     }
   return p;
@@ -33,24 +42,13 @@ MEDICINE * CreaNodoMed ( char* med_name,char* code, int stock, float precio_med,
 
 void EnlazaMedicinas (MEDICINE * medicinaNueva, MEDICINE ** medicinaPrimera)	//Esta funcion enlaza los programas ordenados segun su hora de inicio
 {
-	int comp = 0;
-	int salir = 0;
 	MEDICINE * anterior = NULL;
 	MEDICINE * primero = *medicinaPrimera;	//esta asignacion nos permite guardar el primer nodo de la lista	
 	
-	while ( *anterior != NULL && !salir)
+	while ( *medicinaPrimera != NULL)
 	{	
-		comp = ComparaProgramas( **medicinaPrimera, *medicinaNueva);	//comparamos los programas con la funcion anterior
-	
-		if( comp > 0) //si nos ha devuelto un numero positivo, salimos de la funcion
-			salir = 1;
-		
-		else	// en caso contrario
-		{
-			anterior = (*medicinaPrimera);	//esta asignacion nos permitira almacenar el valor del nodo anterior, que es tras el que ira enlazado nuestro nuevo programa
-			*medicinaPrimera = (*medicinaPrimera)->sig;	//seguimos recorriendo la lista
-		}
-		
+		anterior = (*medicinaPrimera);	//esta asignacion nos permitira almacenar el valor del nodo anterior, que es tras el que ira enlazado nuestro nuevo programa
+		*medicinaPrimera = (*medicinaPrimera)->sig;	//seguimos recorriendo la lista
 	}
 	
 	if( anterior == NULL) 
@@ -71,16 +69,43 @@ void BorraMedicinas (MEDICINE ** medicinaPrimera){
   while (*medicinaPrimera != NULL)
   {
     paux = *medicinaPrimera;
-    *ppAnterior = paux->sig;
+    *medicinaPrimera = paux->sig;
 	if( paux->repartidos != NULL)			
-		free( paux->repartidos);
+		liberaVector(paux->repartidos);
 	if( paux->vTamPedidos != NULL)			
-		free( paux->vTamPedidos);
-	if( paux->med_name != NULL)
-		free(paux->med_name);
-	if(paux->code != NULL)
-		free(paux->code);
+		liberaVector(paux->vTamPedidos);
+	if(paux->matrixComb != NULL)
+		liberaMatriz(paux->filasMatrixComb, paux->matrixComb);
 
     free(paux);
   }
+}
+
+void ImprimeMedicinas (MEDICINE * pAnterior, int horizonte)
+{
+	int i = 0;
+	int j;
+	while (pAnterior != NULL)
+	{
+		i++;
+		printf("\t=====Medicamento %d=====\n",i );
+		printf("\tStock %d:\t\t\t\t%d\n", i, pAnterior->stock);
+		printf("\tPrecio medicamento %d:\t\t\t%f\n", i, pAnterior->precio_med);
+		printf("\tPrecio almacenamiento %d:\t\t%f\n", i, pAnterior->precio_alm);
+		printf("\tCoste pedido %d:\t\t\t\t%f\n", i, pAnterior->coste_pedido);
+		printf("\tCoste recoger %d:\t\t\t%f\n", i, pAnterior->coste_recogida);
+		printf("\tCoste de quedarnos sin stock %d:\t\t%f\n", i, pAnterior->coste_sin_stock);
+		printf("\tCoste oportunidad %d:\t\t\t%f\n", i, pAnterior->coste_oportunidad);
+		printf("\tCantidades repartidas %d\t\t\t", i);
+		for(j = 0; j<horizonte; j++)
+			printf("%d ", pAnterior->repartidos[j]);
+		printf("\n\tStock maximo almacenable %d:\t\t%d\n", i, pAnterior->maxStock);
+		printf("\tStock minimo de seguridad %d:\t\t%d\n", i, pAnterior->minStock);
+		printf("\tPosibilidades de pedido %d:\t\t%d\n", i, pAnterior->nTamPedidos);
+		printf("\tCantidades posibles de pedido %d:\t", i);
+		for(j = 0; j<pAnterior->nTamPedidos; j++)
+			printf("%d ", pAnterior->vTamPedidos[j]);
+		printf("\n\n");
+		pAnterior = pAnterior->sig;
+	}
 }
