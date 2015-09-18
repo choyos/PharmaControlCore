@@ -53,9 +53,6 @@ int leeFicheros(char ** filesName){
 			error = -1;
 		}
 	}
-	for(i = 0; i<error; i++){
-		printf("%s\n", filesName[i]);
-	}
 
 	return error;
 }

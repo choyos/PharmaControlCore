@@ -22,6 +22,7 @@ Nombre: César*/
 #define TAM_BUF 100
 
 void imprimeMatriz(int numFilas, int numColumnas, int **matriz){
+
 	
 	int i;	//Variable auxiliar para recorrer filas
 	int j;	//Variable auxiliar para recorrer columnas
@@ -88,7 +89,7 @@ void convIntToBin(int num, int bits,int *posibilidad){
 
 void inicializa(int * v,int tam){
 	int x;
-	for(x=0; x<tam;x++){
-		v[x]=0;
+	for(x=0; x < tam; x++){
+		v[x] = 0;
 	}
 }

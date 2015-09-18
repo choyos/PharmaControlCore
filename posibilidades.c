@@ -56,8 +56,11 @@ int main(int argc, char *argv[]){
 	//Variables para el cálculo de los costos y seguimiento de información
 	int x;
 	float Jtotal;
+	float * Jmin;
+	float Jtotalmin;
 	int ** matStockOptimo;
 	int ** matPedidosOptimos;
+	int primeraVez = 0;
 
 	//Variable para el trabajo con los nombres de los ficheros de datos
 	char ** filesName = NULL;
@@ -335,9 +338,6 @@ int main(int argc, char *argv[]){
 								error = -7;
 							}
 						}
-						for(i = 0; i<numMed; i++){
-							printf("%s\n", filesName[i]);
-						}
 						if(error == -7){
 							printf("ERROR 7:\nLectura del fichero para acceder a información de medicamentos no válida\n");
 						}else{
@@ -366,7 +366,7 @@ int main(int argc, char *argv[]){
 							MatrizCombMedicinas(&listaMeds, numPedidos);
 
 							//Posibilidad de mostrar por pantalla toda la información de todos los fármacos
-							ImprimeMedicinas(listaMeds, horizonte, numPedidos);
+						//	ImprimeMedicinas(listaMeds, horizonte, numPedidos);
 
 	/*--------------------------------------------------------------------------
 	------------------------Calculamos posibilidad a posibilidad----------------
@@ -379,10 +379,6 @@ int main(int argc, char *argv[]){
 							inicializaVector(horizonte, &posibilidad);
 							int num;
 							int noCumple;
-							
-							//Vectores comunes a todas las iteraciones
-							inicializaVector(horizonte, &stockOptimo);
-							inicializaVector(horizonte, &vectorOptimo);
 
 							for(num = 0; num<limite; num++){
 								//Inicializamos noCumple a 0 para cada posibilidad//
@@ -417,55 +413,40 @@ int main(int argc, char *argv[]){
 										//Apertura de fichero y trabajo para evaluar función de coste
 										if(noCumple == 0){
 
+											int flag = 0;
+
 											if(primeraVez == 0){
 												primeraVez = 1;
 												inicializaMatriz(numMed, horizonte, &matPedidosOptimos);
 												inicializaMatriz(numMed, horizonte, &matStockOptimo);
+												Jmin = (float*) malloc(numMed*sizeof(float));
 											}
 
 											//Funcion en funciones.c
 											/*Realiza el calculo de el vector optimo para cada medicamento y almacena la información util
 											en el nodo correspondiente*/
 
-											Jtotal = EvaluaMedicinas(&listaMeds, horizonte, numPedidos, posibilidad, &matPedidosOptimos, &matStockOptimo);
-											printf("Coste total: %f\n", Jtotal);
-											if (Jtotal < Jtotalmin){
+											Jtotal = EvaluaMedicinas(&listaMeds, horizonte, numPedidos, posibilidad, matPedidosOptimos, matStockOptimo, Jmin);
+											printf("%d\n", matStockOptimo[0][0]);
+											if (Jtotal < Jtotalmin || flag == 0){
+												flag = 1;
 												Jtotalmin = Jtotal;
-												AlmacenaOptimos(&listaMeds, horizonte, );
+												AlmacenaOptimos(&listaMeds, horizonte, numMed, matPedidosOptimos, matStockOptimo, Jmin);
 											}
 										}
 									}
 								}
 							}
 						}
+						liberaMatriz(numMed, matPedidosOptimos);
+						liberaMatriz(numMed, matStockOptimo);
+						free(Jmin);
+						Jmin = NULL;
 						
 						//Mover el bloque para imprimir bien por pantalla/salida estandar
 						printf("Jmin= %f\nVector Óptimo de pedido:", Jtotal);
 						numPedidos = 0;
-						for(x=0;x<horizonte; x++){
-							printf("%d ",vectorOptimo[x] );
-							if(vectorOptimo[x] != 0){
-								numPedidos++;
-							}
-						}
-						printf("\nStock del pedido óptimo:");
-						for(x=0;x<horizonte; x++){
-							printf("%d ",stockOptimo[x] );
-						}
-						printf("\n");
-
-						//char **FechasOptimas;
-						int ** FechasPedido;
-						inicializaMatriz(numPedidos, 3, &FechasPedido);
-						//A partir de obtener los valores optimos de días de pedidos
-						//debemos obtener ahora las fechas con su correspondiente valor
-						printf("\n\n");
-						printf("===============\n===Resultado===\n===============\n\n");
-						obtieneFechasPedidos(vectorOptimo, horizonte, FechasPedido);
-						error = Jtotal;
-						liberaVector(stockOptimo);
-						liberaMatriz(numPedidos, FechasPedido);
-						liberaVector(vectorOptimo);
+						ImprimeResultados(&listaMeds, horizonte);
 						liberaVector(posibilidad);
 					}
 				}

@@ -11,14 +11,11 @@ Nombre: César*/
 #include "typedef.h"
 #include <time.h>
 
-//Función que evalua cada posibilidad para devolver un coste total de medicamentos
-void compruebaFecha();
-
 //Función que devuelve si un año es o no bisiesto
 int bisiesto(int year);
 
 //Funcion que obtiene las fechas de los dias de pedido optimo
-void obtieneFechasPedidos(int*v, int tam, int ** FechasPedido);
+void obtieneFechasPedidos(int*v, int tam, int numPedidos);
 
 //Funcion que devuelve la fecha formateada del dia
 void fechaPedido(int dia, int * fecha);

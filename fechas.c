@@ -22,19 +22,19 @@ Nombre: César*/
 
 #define TAM_BUF 100
 
-void compruebaFecha(){
-
-}
-
 int bisiesto(int year){
 	int bis;
 	bis=(year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
 	return bis;
 }
 
-void obtieneFechasPedidos(int*v, int tam, int ** FechasPedido){
+void obtieneFechasPedidos(int*v, int tam, int numPedidos){
 	int x;
 	int j=0;
+
+	int ** FechasPedido;
+	inicializaMatriz(numPedidos, 3, &FechasPedido);
+
 	for(x=0; x<tam; x++){
 		if(v[x]!=0){
 			fechaPedido(x, FechasPedido[j]);
@@ -43,6 +43,7 @@ void obtieneFechasPedidos(int*v, int tam, int ** FechasPedido){
 			j++;
 		}
 	}
+	liberaMatriz(numPedidos, FechasPedido);
 }
 
 /*

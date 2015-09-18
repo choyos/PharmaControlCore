@@ -10,6 +10,7 @@ Login: ceshoymar */
 #include "typedef.h"
 #include "matrices.h"
 #include "evalua.h"
+#include "fechas.h"
 
 MEDICINE * CreaNodoMed ( int stock, float precio_med, float precio_alm, float coste_pedido, float coste_recogida, float coste_sin_stock, float coste_oportunidad, int* repartidos, int maxStock, int minStock, int nTamPedidos, int* vTamPedidos, int horizonte)
 {
@@ -167,7 +168,7 @@ void BorraMedicinas (MEDICINE ** medicinaPrimera){
   }
 }
 
-float EvaluaMedicinas(MEDICINE ** medicinaPrimera, int horizonte, int numPedidos, int * posibilidad, int *** matPedidosOptimos, int *** matStockOptimo){
+float EvaluaMedicinas(MEDICINE ** medicinaPrimera, int horizonte, int numPedidos, int * posibilidad, int ** matPedidosOptimos, int ** matStockOptimo, float * Jmin){
 	
 	MEDICINE * paux = NULL;	//Puntero auxiliar para recorrer la lista
 	MEDICINE * primero = *medicinaPrimera;	//Puntero para no perder la referencia del comienzo de la lista
@@ -187,11 +188,11 @@ float EvaluaMedicinas(MEDICINE ** medicinaPrimera, int horizonte, int numPedidos
 	float J;
 	float Jtotal;
 
+	//Inicializamos los vectores y matrices necesarios
 	inicializaMatriz(primero->filasMatrixComb, horizonte, &matrix);
+	inicializaVector(horizonte, &stock);
 
 	while(*medicinaPrimera != NULL){
-		
-		i++;
 
 		//Recorremos la lista
 		paux = *medicinaPrimera;
@@ -210,40 +211,114 @@ float EvaluaMedicinas(MEDICINE ** medicinaPrimera, int horizonte, int numPedidos
 			}
 			g=0;	//Al finalizar cada pasada reiniciamos el contador g a 0
 		}
-		//Inicializamos los vectores necesarios
-		inicializaVector(horizonte, &stock);
+		
 		/*Realizamos el computo con todas las posibilidades de la matriz obteniendo las Js*/
-
 		for(x = 0; x < paux->filasMatrixComb; x++){
 			inicializa(stock, horizonte);
 			J = evalua(matrix[x], horizonte, 0, stock, paux);
 		//	printf("\n%d->\tJ = %f\n",x,J);
-			if(x == 0 || J < paux->Jmin){
-				paux->Jmin = J;
+			if(x == 0 || J < Jmin[i]){
+				Jmin[i] = J;
 				for(k=0; k<horizonte; k++){
-					*matPedidosOptimos[i][k]=matrix[x][k];
-					*matStockOptimo[i][k]=stock[k];
+					matStockOptimo[i][k] = stock[k];
+					matPedidosOptimos[i][k] = matrix[x][k];
 				}
 			}
 		}
 		
-		printf("Jmin_%d: %f\n", i, paux->Jmin);
-		
 		//Sum(Jmin_i) Sumamos los minimos de los medicamentos
-		Jtotal = Jtotal + paux->Jmin;
+		Jtotal = Jtotal + Jmin[i];
+
+		i++;
 	}
+		
 	/*Añadimos los costes de pedido y recogida (el ahorro real respecto 
 	al computo de medicamentos de forma individual)*/
 	Jtotal = Jtotal + numPedidos * (primero->coste_pedido + primero->coste_recogida);
 
-	printf("Coste total: %f\n", Jtotal);
 	//Recuperamos la referencia del principio
 	*medicinaPrimera = primero;
 
 	//Liberamos memoria de matrices y vectores reservados
 	liberaMatriz(primero->filasMatrixComb, matrix);
-	liberaVector(stock);
 
 	//Devolvemos el resultado de evaluar todos 
 	return Jtotal;
+}
+
+void AlmacenaOptimos(MEDICINE ** medicinaPrimera, int horizonte, int numMed, int ** matPedidosOptimos, int ** matStockOptimo, float * Jmin){
+
+	//Variables para recorrido de lista
+	MEDICINE * paux = NULL;
+	MEDICINE * primero = *medicinaPrimera;
+
+	//Variables auxiliares
+	int i = 0;
+	int j;
+
+	while( *medicinaPrimera != NULL){
+
+		//Recorremos la lista
+		paux = *medicinaPrimera;
+		*medicinaPrimera = paux->sig;
+
+		//Inicializamos los vectores del medicamento
+		inicializaVector(horizonte, &(paux->pedidosOptimos));
+		inicializaVector(horizonte, &(paux->stockOptimo));
+
+		paux->Jmin = Jmin[i];
+		for(j = 0; j < horizonte; j++){
+			paux->pedidosOptimos[j] = matPedidosOptimos[i][j];
+			paux->stockOptimo[j] = matStockOptimo[i][j];
+		}
+		i++;
+	}
+
+	//Recuperamos la referencia del principio de la lista
+	*medicinaPrimera = primero; 
+}
+
+void ImprimeResultados(MEDICINE ** medicinaPrimera, int horizonte){
+
+	//Punteros para recorrido de lista
+	MEDICINE * paux = NULL;
+	MEDICINE * primero = *medicinaPrimera;
+
+	//Variables auxiliares
+	int i = 0;
+	int j;
+	int numPedidos = 0;
+
+	printf("\t================\n");
+	printf("\t===Resultados===\n");
+	printf("\t================\n");
+
+	while(*medicinaPrimera != NULL){
+
+		//Incrementamos el contador auxiliar
+		i++;
+
+		//Recorremos la lista
+		paux = *medicinaPrimera;
+		*medicinaPrimera = paux->sig;
+
+		printf("\tMedicamento %d\n", i);
+		printf("\tStock Optimo %d:\t",i);
+		imprimeVector(horizonte, paux->stockOptimo);
+		printf("\tPedidos optimos %d:\t",i);
+		imprimeVector(horizonte, paux->pedidosOptimos);
+
+		for(j=0;j<horizonte; j++){
+			if(paux->pedidosOptimos[j] != 0){
+				numPedidos++;
+			}
+		}
+
+		/*Función de fechas.c que muestra por pantalla de forma ordenada 
+		cuando y cuanto hay que solicitar*/
+		obtieneFechasPedidos(paux->pedidosOptimos, horizonte, numPedidos);
+	}
+
+	//Recuperamos la referencia
+	*medicinaPrimera = primero;
 }
