@@ -28,15 +28,18 @@ int bisiesto(int year){
 	return bis;
 }
 
-void obtieneFechasPedidos(int*v, int tam, int numPedidos){
+void obtieneFechasPedidos(int * v, int tam, int numPedidos){
 	int x;
 	int j=0;
 
 	int ** FechasPedido;
+
+
 	inicializaMatriz(numPedidos, 3, &FechasPedido);
 
 	for(x=0; x<tam; x++){
 		if(v[x]!=0){
+			printf("ENTRA\n");
 			fechaPedido(x, FechasPedido[j]);
 			printf("%d/%d/%d\n", FechasPedido[j][0], FechasPedido[j][1], FechasPedido[j][2]);
 			printf("%d\n", v[x]);

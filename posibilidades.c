@@ -427,7 +427,6 @@ int main(int argc, char *argv[]){
 											en el nodo correspondiente*/
 
 											Jtotal = EvaluaMedicinas(&listaMeds, horizonte, numPedidos, posibilidad, matPedidosOptimos, matStockOptimo, Jmin);
-											printf("%d\n", matStockOptimo[0][0]);
 											if (Jtotal < Jtotalmin || flag == 0){
 												flag = 1;
 												Jtotalmin = Jtotal;
@@ -444,7 +443,6 @@ int main(int argc, char *argv[]){
 						Jmin = NULL;
 						
 						//Mover el bloque para imprimir bien por pantalla/salida estandar
-						printf("Jmin= %f\nVector Óptimo de pedido:", Jtotal);
 						numPedidos = 0;
 						ImprimeResultados(&listaMeds, horizonte);
 						liberaVector(posibilidad);

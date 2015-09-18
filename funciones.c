@@ -303,11 +303,11 @@ void ImprimeResultados(MEDICINE ** medicinaPrimera, int horizonte){
 		*medicinaPrimera = paux->sig;
 
 		printf("\tMedicamento %d\n", i);
-		printf("\tStock Optimo %d:\t",i);
+		printf("\tStock Optimo %d:\t\t",i);
 		imprimeVector(horizonte, paux->stockOptimo);
-		printf("\tPedidos optimos %d:\t",i);
+		printf("\n\tPedidos optimos %d:\t",i);
 		imprimeVector(horizonte, paux->pedidosOptimos);
-
+		printf("\n");
 		for(j=0;j<horizonte; j++){
 			if(paux->pedidosOptimos[j] != 0){
 				numPedidos++;
@@ -317,6 +317,7 @@ void ImprimeResultados(MEDICINE ** medicinaPrimera, int horizonte){
 		/*Función de fechas.c que muestra por pantalla de forma ordenada 
 		cuando y cuanto hay que solicitar*/
 		obtieneFechasPedidos(paux->pedidosOptimos, horizonte, numPedidos);
+		printf("\n");
 	}
 
 	//Recuperamos la referencia
