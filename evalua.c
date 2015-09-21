@@ -60,9 +60,9 @@ int minimo(int dim, int * vector){
 	int i;
 	int minimo;
 	for(i = 0; i<dim; i++){
-		if(i == 0){
+		if(i == 0 && vector[i] != 0){
 			minimo = vector[i];
-		}else if(vector[i] < minimo && minimo != 0){
+		}else if(vector[i] < minimo && vector[i] != 0){
 			minimo = vector[i];
 		}
 	}

@@ -23,8 +23,10 @@ void MatrizCombMedicinas (MEDICINE ** medicinaPrimera, int numPedidos);		//Reali
 
 float EvaluaMedicinas(MEDICINE ** medicinaPrimera, int horizonte, int numPedidos, int * posibilidad, int ** matPedidosOptimos, int ** matStockOptimo, float * Jmin);	//Realiza el calculo de coste total
 
-void AlmacenaOptimos(MEDICINE ** medicinaPrimera, int horizonte, int numMed, int ** matPedidosOptimos, int ** matStockOptimo, float * Jmin);	//Función para almacenar las variables optimas ligadas a los medicamentos
+void AlmacenaOptimos(MEDICINE ** medicinaPrimera, int horizonte, int ** matPedidosOptimos, int ** matStockOptimo, float * Jmin);	//Función para almacenar las variables optimas ligadas a los medicamentos
 
 void ImprimeResultados(MEDICINE ** medicinaPrimera, int horizonte);		//Funcion para imprimir de forma presentable los resultados
+
+void BorraMedicina(MEDICINE * medicina);	//Función que borra un medicamento
 
 #endif

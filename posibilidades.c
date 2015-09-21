@@ -25,6 +25,7 @@ Nombre: César*/
 #define DOMINGO 6
 #define TAM_FILE_NAME 20
 
+
 int main(int argc, char *argv[]){
 	printf("\n");
 	clock_t start = clock();  
@@ -54,7 +55,6 @@ int main(int argc, char *argv[]){
 	int aux=0;
 
 	//Variables para el cálculo de los costos y seguimiento de información
-	int x;
 	float Jtotal;
 	float * Jmin;
 	float Jtotalmin;
@@ -239,12 +239,14 @@ int main(int argc, char *argv[]){
 							//Si el año es menor que el actual
 							if(FechaActual[2]>Fecha[n][2]){ 
 								error=-6;					//error
+								liberaVector(FechaActual);
 							}else{
 								aux=Fecha[n][2]-FechaActual[2];	
 								//si la diferencia de años es mayor que uno
 								if(aux>1){	
 									//error: estará fuera del horizonte
 									error=-6;
+									liberaVector(FechaActual);
 								}else{
 									//si el mes es pasado al actual
 									if(FechaActual[1]>Fecha[n][1]){ 
@@ -294,11 +296,11 @@ int main(int argc, char *argv[]){
 											}
 										}
 									}
-									liberaVector(FechaActual);
-									liberaMatriz(numDiasNo, Fecha);
 								}
 							}
 						}
+						liberaVector(FechaActual);
+						liberaMatriz(numDiasNo, Fecha);
 					}
 					/*Comprobamos si es error sintactico*/
 					if (error==-5){
@@ -324,15 +326,15 @@ int main(int argc, char *argv[]){
 							//Lectura del fichero hasta que termine
 							//Reservamos memoria para la matriz
 							filesName = (char **) malloc(sizeof(*filesName));
-							filesName[0] = (char *) malloc(TAM_FILE_NAME*sizeof(char*));
 
 							//Leemos hasta el final del fichero
 							while(!feof(fpd)){
-								fscanf(fpd, "%s", filesName[numMed]); //Cada linea la almacenamos en un vector de cadenas de caracteres
-								numMed++;
 								//En cada pasada realizamos reserva dinamica de memoria para la nueva cadena
 								filesName = realloc(filesName, (numMed+1) * sizeof(*filesName));
-							    filesName[numMed] = malloc(TAM_FILE_NAME * sizeof(char*));		
+							    filesName[numMed] = malloc(TAM_FILE_NAME * sizeof(char*));
+
+								fscanf(fpd, "%s", filesName[numMed]); //Cada linea la almacenamos en un vector de cadenas de caracteres
+								numMed++;
 							}
 							if( fclose(fpd) ){
 								error = -7;
@@ -359,6 +361,7 @@ int main(int argc, char *argv[]){
 									break;
 								}
 								medNueva = CreaNodoMed( medAux.stock, medAux.precio_med, medAux.precio_alm, medAux.coste_pedido, medAux.coste_recogida, medAux.coste_sin_stock, medAux.coste_oportunidad, medAux.repartidos, medAux.maxStock, medAux.minStock, medAux.nTamPedidos, medAux.vTamPedidos, horizonte);
+								BorraMedicina(&medAux);
 								EnlazaMedicinas (medNueva, &listaMeds);
 							}
 						
@@ -375,7 +378,6 @@ int main(int argc, char *argv[]){
 								limite=limite*2;
 							}
 							
-
 							inicializaVector(horizonte, &posibilidad);
 							int num;
 							int noCumple;
@@ -430,22 +432,29 @@ int main(int argc, char *argv[]){
 											if (Jtotal < Jtotalmin || flag == 0){
 												flag = 1;
 												Jtotalmin = Jtotal;
-												AlmacenaOptimos(&listaMeds, horizonte, numMed, matPedidosOptimos, matStockOptimo, Jmin);
+												AlmacenaOptimos(&listaMeds, horizonte, matPedidosOptimos, matStockOptimo, Jmin);
 											}
 										}
 									}
 								}
 							}
+							liberaVector(posibilidad);
+							liberaMatriz(numMed, matPedidosOptimos);
+							liberaMatriz(numMed, matStockOptimo);
 						}
-						liberaMatriz(numMed, matPedidosOptimos);
-						liberaMatriz(numMed, matStockOptimo);
+
+						// Liberamos espacios de memoria utilizados durante el proceso
+						for(i = 0; i<numMed; i++){
+							free(filesName[i]);
+							filesName[i] = NULL;
+						}
+						free(filesName);
+						filesName = NULL;
 						free(Jmin);
 						Jmin = NULL;
 						
-						//Mover el bloque para imprimir bien por pantalla/salida estandar
-						numPedidos = 0;
 						ImprimeResultados(&listaMeds, horizonte);
-						liberaVector(posibilidad);
+						BorraMedicinas (&listaMeds);
 					}
 				}
 			}
@@ -454,5 +463,6 @@ int main(int argc, char *argv[]){
 	printf("\n");
 	printf("Tiempo transcurrido: %f\n\n", ((double)clock() - start) / CLOCKS_PER_SEC);	
 	
+
 	return error;
 }

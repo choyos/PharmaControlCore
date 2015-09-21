@@ -21,6 +21,12 @@ Nombre: César*/
 
 #define TAM_BUF 100
 
+int liberaM = 0;
+int liberaV = 0;
+int inicializaM = 0;
+int inicializaV = 0;
+
+
 void imprimeMatriz(int numFilas, int numColumnas, int **matriz){
 
 	
@@ -45,6 +51,8 @@ void imprimeVector(int dim, int * vector){
 }
 
 void inicializaMatriz(int numFilas, int numColumnas, int ***matriz){
+	inicializaM++;
+
 	int i;
 	(*matriz)=(int **) malloc(numFilas*sizeof(int*));
 	for(i=0;i<numFilas;i++){
@@ -53,20 +61,25 @@ void inicializaMatriz(int numFilas, int numColumnas, int ***matriz){
 }
 
 void inicializaVector(int dim, int **vector){
+	inicializaV++;
 	(*vector) = (int*) malloc(dim*sizeof(int));
 }
 
 void liberaMatriz(int numFilas, int ** matriz){
+
+	liberaM++;
 	int i;
 
 	for(i = 0; i < numFilas; i++){
-		liberaVector(matriz[i]);
+		free(matriz[i]);
+		matriz[i] = NULL;
 	}
 	free(matriz);
 	matriz = NULL;
 }
 
 void liberaVector(int *vector){
+	liberaV++;
 	free(vector);
 	vector = NULL;
 }
@@ -92,4 +105,12 @@ void inicializa(int * v,int tam){
 	for(x=0; x < tam; x++){
 		v[x] = 0;
 	}
+}
+
+void imprimeNumPunteros(){
+	printf("PUNTEROS\n");
+	printf("Reservados %d punteros de matrices\n", inicializaM);
+	printf("Reservados %d punteros de vectores\n", inicializaV);
+	printf("Liberados %d punteros de matrices\n", liberaM);
+	printf("Liberados %d punteros de vectores\n", liberaV);
 }

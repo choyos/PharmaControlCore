@@ -7,3 +7,5 @@ posibilidades: posibilidades.o evalua.o fechas.o ficheros.o matrices.o funciones
 	gcc	-W	-Wall	-c	funciones.c
 	gcc	-W	-Wall	-c	posibilidades.c
 	gcc -o OFH posibilidades.o evalua.o fechas.o ficheros.o matrices.o funciones.o
+
+	rm *.o

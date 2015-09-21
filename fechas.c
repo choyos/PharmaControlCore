@@ -39,13 +39,13 @@ void obtieneFechasPedidos(int * v, int tam, int numPedidos){
 
 	for(x=0; x<tam; x++){
 		if(v[x]!=0){
-			printf("ENTRA\n");
 			fechaPedido(x, FechasPedido[j]);
-			printf("%d/%d/%d\n", FechasPedido[j][0], FechasPedido[j][1], FechasPedido[j][2]);
-			printf("%d\n", v[x]);
+			printf("\t%d/%d/%d\n", FechasPedido[j][0], FechasPedido[j][1], FechasPedido[j][2]);
+			printf("\t%d\n", v[x]);
 			j++;
 		}
 	}
+
 	liberaMatriz(numPedidos, FechasPedido);
 }
 

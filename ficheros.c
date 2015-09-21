@@ -99,6 +99,7 @@ int leeMedicamentos(int horizonte, MEDICINE* med, char * fileName){
 		}
 		med->vTamPedidos[med->nTamPedidos] = 0;
 		med->nTamPedidos = med->nTamPedidos+1;
+		
 		if( fclose(fp) ){
 			printf( "Error: fichero datos %s NO CERRADO\n", fileName );
 			error = -1;
