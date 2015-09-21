@@ -36,3 +36,5 @@ void convIntToBin(int num, int bits, int * posibilidad);
 
 //Función para inicializar los vectores a 0
 void inicializa(int * v,int tam);
+
+void imprimeNumPunteros();

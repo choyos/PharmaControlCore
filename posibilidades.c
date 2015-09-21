@@ -25,6 +25,7 @@ Nombre: César*/
 #define DOMINGO 6
 #define TAM_FILE_NAME 20
 
+
 int main(int argc, char *argv[]){
 	printf("\n");
 	clock_t start = clock();  
@@ -54,10 +55,12 @@ int main(int argc, char *argv[]){
 	int aux=0;
 
 	//Variables para el cálculo de los costos y seguimiento de información
-	int x;
 	float Jtotal;
-	int *stockOptimo;
-	int *vectorOptimo;
+	float * Jmin;
+	float Jtotalmin;
+	int ** matStockOptimo;
+	int ** matPedidosOptimos;
+	int primeraVez = 0;
 
 	//Variable para el trabajo con los nombres de los ficheros de datos
 	char ** filesName = NULL;
@@ -236,12 +239,14 @@ int main(int argc, char *argv[]){
 							//Si el año es menor que el actual
 							if(FechaActual[2]>Fecha[n][2]){ 
 								error=-6;					//error
+								liberaVector(FechaActual);
 							}else{
 								aux=Fecha[n][2]-FechaActual[2];	
 								//si la diferencia de años es mayor que uno
 								if(aux>1){	
 									//error: estará fuera del horizonte
 									error=-6;
+									liberaVector(FechaActual);
 								}else{
 									//si el mes es pasado al actual
 									if(FechaActual[1]>Fecha[n][1]){ 
@@ -291,11 +296,11 @@ int main(int argc, char *argv[]){
 											}
 										}
 									}
-									liberaVector(FechaActual);
-									liberaMatriz(numDiasNo, Fecha);
 								}
 							}
 						}
+						liberaVector(FechaActual);
+						liberaMatriz(numDiasNo, Fecha);
 					}
 					/*Comprobamos si es error sintactico*/
 					if (error==-5){
@@ -321,22 +326,19 @@ int main(int argc, char *argv[]){
 							//Lectura del fichero hasta que termine
 							//Reservamos memoria para la matriz
 							filesName = (char **) malloc(sizeof(*filesName));
-							filesName[0] = (char *) malloc(TAM_FILE_NAME*sizeof(char*));
 
 							//Leemos hasta el final del fichero
 							while(!feof(fpd)){
-								fscanf(fpd, "%s", filesName[numMed]); //Cada linea la almacenamos en un vector de cadenas de caracteres
-								numMed++;
 								//En cada pasada realizamos reserva dinamica de memoria para la nueva cadena
 								filesName = realloc(filesName, (numMed+1) * sizeof(*filesName));
-							    filesName[numMed] = malloc(TAM_FILE_NAME * sizeof(char*));		
+							    filesName[numMed] = malloc(TAM_FILE_NAME * sizeof(char*));
+
+								fscanf(fpd, "%s", filesName[numMed]); //Cada linea la almacenamos en un vector de cadenas de caracteres
+								numMed++;
 							}
 							if( fclose(fpd) ){
 								error = -7;
 							}
-						}
-						for(i = 0; i<numMed; i++){
-							printf("%s\n", filesName[i]);
 						}
 						if(error == -7){
 							printf("ERROR 7:\nLectura del fichero para acceder a información de medicamentos no válida\n");
@@ -359,6 +361,7 @@ int main(int argc, char *argv[]){
 									break;
 								}
 								medNueva = CreaNodoMed( medAux.stock, medAux.precio_med, medAux.precio_alm, medAux.coste_pedido, medAux.coste_recogida, medAux.coste_sin_stock, medAux.coste_oportunidad, medAux.repartidos, medAux.maxStock, medAux.minStock, medAux.nTamPedidos, medAux.vTamPedidos, horizonte);
+								BorraMedicina(&medAux);
 								EnlazaMedicinas (medNueva, &listaMeds);
 							}
 						
@@ -366,7 +369,7 @@ int main(int argc, char *argv[]){
 							MatrizCombMedicinas(&listaMeds, numPedidos);
 
 							//Posibilidad de mostrar por pantalla toda la información de todos los fármacos
-							ImprimeMedicinas(listaMeds, horizonte, numPedidos);
+						//	ImprimeMedicinas(listaMeds, horizonte, numPedidos);
 
 	/*--------------------------------------------------------------------------
 	------------------------Calculamos posibilidad a posibilidad----------------
@@ -375,14 +378,9 @@ int main(int argc, char *argv[]){
 								limite=limite*2;
 							}
 							
-
 							inicializaVector(horizonte, &posibilidad);
 							int num;
 							int noCumple;
-							
-							//Vectores comunes a todas las iteraciones
-							inicializaVector(horizonte, &stockOptimo);
-							inicializaVector(horizonte, &vectorOptimo);
 
 							for(num = 0; num<limite; num++){
 								//Inicializamos noCumple a 0 para cada posibilidad//
@@ -417,45 +415,46 @@ int main(int argc, char *argv[]){
 										//Apertura de fichero y trabajo para evaluar función de coste
 										if(noCumple == 0){
 
+											int flag = 0;
+
+											if(primeraVez == 0){
+												primeraVez = 1;
+												inicializaMatriz(numMed, horizonte, &matPedidosOptimos);
+												inicializaMatriz(numMed, horizonte, &matStockOptimo);
+												Jmin = (float*) malloc(numMed*sizeof(float));
+											}
+
 											//Funcion en funciones.c
 											/*Realiza el calculo de el vector optimo para cada medicamento y almacena la información util
 											en el nodo correspondiente*/
-											Jtotal = EvaluaMedicinas(&listaMeds, horizonte, numPedidos, posibilidad);
-											printf("Coste total: %f\n", Jtotal);
+
+											Jtotal = EvaluaMedicinas(&listaMeds, horizonte, numPedidos, posibilidad, matPedidosOptimos, matStockOptimo, Jmin);
+											if (Jtotal < Jtotalmin || flag == 0){
+												flag = 1;
+												Jtotalmin = Jtotal;
+												AlmacenaOptimos(&listaMeds, horizonte, matPedidosOptimos, matStockOptimo, Jmin);
+											}
 										}
 									}
 								}
 							}
+							liberaVector(posibilidad);
+							liberaMatriz(numMed, matPedidosOptimos);
+							liberaMatriz(numMed, matStockOptimo);
 						}
-						
-						//Mover el bloque para imprimir bien por pantalla/salida estandar
-						printf("Jmin= %f\nVector Óptimo de pedido:", Jtotal);
-						numPedidos = 0;
-						for(x=0;x<horizonte; x++){
-							printf("%d ",vectorOptimo[x] );
-							if(vectorOptimo[x] != 0){
-								numPedidos++;
-							}
-						}
-						printf("\nStock del pedido óptimo:");
-						for(x=0;x<horizonte; x++){
-							printf("%d ",stockOptimo[x] );
-						}
-						printf("\n");
 
-						//char **FechasOptimas;
-						int ** FechasPedido;
-						inicializaMatriz(numPedidos, 3, &FechasPedido);
-						//A partir de obtener los valores optimos de días de pedidos
-						//debemos obtener ahora las fechas con su correspondiente valor
-						printf("\n\n");
-						printf("===============\n===Resultado===\n===============\n\n");
-						obtieneFechasPedidos(vectorOptimo, horizonte, FechasPedido);
-						error = Jtotal;
-						liberaVector(stockOptimo);
-						liberaMatriz(numPedidos, FechasPedido);
-						liberaVector(vectorOptimo);
-						liberaVector(posibilidad);
+						// Liberamos espacios de memoria utilizados durante el proceso
+						for(i = 0; i<numMed; i++){
+							free(filesName[i]);
+							filesName[i] = NULL;
+						}
+						free(filesName);
+						filesName = NULL;
+						free(Jmin);
+						Jmin = NULL;
+						
+						ImprimeResultados(&listaMeds, horizonte);
+						BorraMedicinas (&listaMeds);
 					}
 				}
 			}
@@ -464,5 +463,6 @@ int main(int argc, char *argv[]){
 	printf("\n");
 	printf("Tiempo transcurrido: %f\n\n", ((double)clock() - start) / CLOCKS_PER_SEC);	
 	
+
 	return error;
 }
