@@ -293,7 +293,7 @@ void AlmacenaOptimos(MEDICINE ** medicinaPrimera, int horizonte, int ** matPedid
 	*medicinaPrimera = primero; 
 }
 
-void ImprimeResultados(MEDICINE ** medicinaPrimera, int horizonte){
+void ImprimeResultados(MEDICINE ** medicinaPrimera, int horizonte, float Jtotal){
 
 	//Punteros para recorrido de lista
 	MEDICINE * paux = NULL;
@@ -307,6 +307,7 @@ void ImprimeResultados(MEDICINE ** medicinaPrimera, int horizonte){
 	printf("\t================\n");
 	printf("\t===Resultados===\n");
 	printf("\t================\n");
+	printf("\n\tCoste total: %.2f\n\n", Jtotal);
 
 	while(*medicinaPrimera != NULL){
 

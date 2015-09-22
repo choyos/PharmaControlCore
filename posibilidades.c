@@ -453,7 +453,7 @@ int main(int argc, char *argv[]){
 						free(Jmin);
 						Jmin = NULL;
 						
-						ImprimeResultados(&listaMeds, horizonte);
+						ImprimeResultados(&listaMeds, horizonte, Jtotalmin);
 						BorraMedicinas (&listaMeds);
 					}
 				}
