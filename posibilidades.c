@@ -443,6 +443,7 @@ int main(int argc, char *argv[]){
 							liberaMatriz(numMed, matStockOptimo);
 						}
 
+						ImprimeResultados(&listaMeds, horizonte, Jtotalmin, filesName);
 						// Liberamos espacios de memoria utilizados durante el proceso
 						for(i = 0; i<numMed; i++){
 							free(filesName[i]);
@@ -453,16 +454,12 @@ int main(int argc, char *argv[]){
 						free(Jmin);
 						Jmin = NULL;
 						
-						ImprimeResultados(&listaMeds, horizonte, Jtotalmin);
 						BorraMedicinas (&listaMeds);
 					}
 				}
 			}
 		}
 	}
-	printf("\n");
-	printf("Tiempo transcurrido: %f\n\n", ((double)clock() - start) / CLOCKS_PER_SEC);	
 	
-
 	return error;
 }

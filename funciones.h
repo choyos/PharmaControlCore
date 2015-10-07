@@ -25,7 +25,7 @@ float EvaluaMedicinas(MEDICINE ** medicinaPrimera, int horizonte, int numPedidos
 
 void AlmacenaOptimos(MEDICINE ** medicinaPrimera, int horizonte, int ** matPedidosOptimos, int ** matStockOptimo, float * Jmin);	//Función para almacenar las variables optimas ligadas a los medicamentos
 
-void ImprimeResultados(MEDICINE ** medicinaPrimera, int horizonte, float Jtotal);		//Funcion para imprimir de forma presentable los resultados
+void ImprimeResultados(MEDICINE ** medicinaPrimera, int horizonte, float Jtotal, char ** fileName);		//Funcion para imprimir de forma presentable los resultados
 
 void BorraMedicina(MEDICINE * medicina);	//Función que borra un medicamento
 
